@@ -17,8 +17,10 @@ async function loadTasks() {
                 ${task.task}
             </span>
 
-            <button onclick="toggleTask(${task.id})">✔</button>
-            <button onclick="deleteTask(${task.id})">🗑</button>
+            <div class="task-actions">
+                <button class="toggle-btn" onclick="toggleTask(${task.id})"><i class="fa-solid fa-check"></i></button>
+                <button class="delete-btn" onclick="deleteTask(${task.id})"><i class="fa-solid fa-trash"></i></button>
+            </div>
         `;
         list.appendChild(li);
     });

@@ -65,6 +65,27 @@ ul li {
     justify-content: space-between;
 }
 
+.task-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.toggle-btn {
+    background-color: #28a745;
+}
+
+.delete-btn {
+    background-color: #d26161;
+}
+
+.toggle-btn:hover {
+    background-color: #218838;
+}
+
+.delete-btn:hover {
+    background-color: #c82333;
+}
+
 #taskForm {
     display: flex;
     justify-content: center;
