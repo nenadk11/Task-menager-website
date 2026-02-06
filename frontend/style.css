@@ -70,3 +70,7 @@ ul li {
     justify-content: center;
     gap: 10px;
 }
+
+.done {
+    text-decoration: line-through;
+}
