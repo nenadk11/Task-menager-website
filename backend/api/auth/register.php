@@ -6,9 +6,9 @@ require_once __DIR__ . '/../../config/db.php';
 
 $data = json_decode(file_get_contents("php://input"), true);
 
-$username = trim($data["username"]);
-$email = trim($data["email"]);
-$password = $data["password"];
+$username = trim($data["username"] ?? "");
+$email = trim($data["email"] ?? "");
+$password = $data["password"] ?? "";
 
 //Provera da li je username prazan ili ima space
 if(empty($username) || preg_match('/\s/', $username)){
