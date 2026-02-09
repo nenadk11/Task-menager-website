@@ -25,12 +25,18 @@ if(empty($email) || empty($password)){
 //Hashovanje sifre
 $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-//Ubacivanje u bazu
-$stmt = $pdo->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
+try {
 
-if($stmt->execute([$username, $email, $hashedPassword])){
-    echo json_encode(["success" => true]);
-}else {
-    echo json_encode(["success" => false, "message" => "User already exists"]);
+    //Ubacivanje u bazu
+    $stmt = $pdo->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
+
+    if($stmt->execute([$username, $email, $hashedPassword])){
+        echo json_encode(["success" => true]);
+    }else {
+        echo json_encode(["success" => false, "message" => "User already exists"]);
+    }
+
+}catch(PDOException $e) {
+    echo json_encode(["success" => false, "message" => "Server error"]);
 }
 ?>
