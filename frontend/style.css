@@ -8,6 +8,8 @@
     --primary-container-color: #E2E8F0;
     --button-color: #0EA5E9;
     --button-hover-color: #0284C7;
+    --delete-btn-color: #d26161;
+    --delete-btn-hover: #c82333;
 }
 
 * {
@@ -80,7 +82,7 @@ ul li {
 }
 
 .delete-btn {
-    background-color: #d26161;
+    background-color: var(--delete-btn-color);
 }
 
 .toggle-btn:hover {
@@ -88,7 +90,7 @@ ul li {
 }
 
 .delete-btn:hover {
-    background-color: #c82333;
+    background-color: var(--delete-btn-hover);
 }
 
 #taskForm {
@@ -99,6 +101,14 @@ ul li {
 
 .done {
     text-decoration: line-through;
+}
+
+.toggle-btn.completed {
+    background-color: var(--delete-btn-color) !important;
+}
+
+.toggle-btn.completed:hover {
+    background-color: var(--delete-btn-hover) !important;
 }
 
 /*login/register*/

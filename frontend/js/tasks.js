@@ -30,7 +30,9 @@ import { checkAuth } from "./auth.js";
                     </span>
 
                     <div class="task-actions">
-                        <button class="toggle-btn"><i class="fa-solid fa-check"></i></button>
+                        <button class="toggle-btn ${task.status === "completed" ? "completed" : ""}">
+                        <i class="fa-solid ${task.status === "completed" ? "fa-rotate-left" : "fa-check"}"></i>
+                        </button>
                         <button class="delete-btn"><i class="fa-solid fa-trash"></i></button>
                     </div>
                 `;
@@ -50,10 +52,12 @@ import { checkAuth } from "./auth.js";
 
         if(e.target.closest(".toggle-btn")){
             await toggleTask(id);
+            await loadTasks();
         }
 
         if(e.target.closest(".delete-btn")){
             await deleteTask(id);
+            await loadTasks();
         }
     });
 
