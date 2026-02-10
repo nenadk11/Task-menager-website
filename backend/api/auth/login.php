@@ -1,4 +1,6 @@
 <?php
+session_start();
+
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json");
 
@@ -23,14 +25,18 @@ try {
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if($user && password_verify($password, $user["password"])){
-        echo json_encode([
-            "success" => true,
-            "user" => [
-                "id" => $user["id"],
-                "username" => $user["username"],
-                "email" => $user["email"]
-                ]
-            ]);
+
+        $_SESSION["user"] = [
+            "id" => $user["id"],
+            "username" => $user["username"],
+            "email" => $user["email"]
+        ];
+
+        //Vreme poslednje aktivnosti
+        $_SESSION["last_activity"] = time();
+
+        echo json_encode(["success" => true, "user" => $_SESSION["user"]]);
+
     }else{
         echo json_encode(["success" => false, "message" => "Invalid email or password"]);
     }
