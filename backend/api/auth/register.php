@@ -9,6 +9,7 @@ $data = json_decode(file_get_contents("php://input"), true);
 $username = trim($data["username"] ?? "");
 $email = trim($data["email"] ?? "");
 $password = $data["password"] ?? "";
+$confirmPassword = $data["confirmPassword"] ?? "";
 
 //Provera da li je username prazan ili ima space
 if(empty($username) || preg_match('/\s/', $username)){
@@ -16,9 +17,20 @@ if(empty($username) || preg_match('/\s/', $username)){
     exit;
 }
 
+//Provera da li postoji confirm passworda
+if(empty($confirmPassword)){
+    echo json_encode(["success" => false, "message" => "Please confirm your password"]);
+    exit;
+}
+
 //Provera da li je email ili sifra prazna
 if(empty($email) || empty($password)){
     echo json_encode(["success" => false, "message" => "Email and password required"]);
+    exit;
+}
+
+if($password !== $confirmPassword){
+    echo json_encode(["success" => false, "message" => "Passwords do not match"]);
     exit;
 }
 
