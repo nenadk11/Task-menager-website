@@ -6,41 +6,62 @@ import { checkAuth } from "./auth.js";
 
     console.log("Logged user:", user);
 
+    const list = document.getElementById("taskList");
+    const form = document.getElementById("taskForm");
+    const taskInput = document.getElementById("taskInput");
+
     await loadTasks();
 
-    //GET - za uzimanje taskova iz backenda
+    //GET - za ucitavanje taskova iz backenda
     async function loadTasks() {
+        try {
+            const res = await fetch("http://localhost:8000/backend/api/tasks/tasks.php");
+            const tasks = await res.json();
 
-        const res = await fetch("http://localhost:8000/backend/api/tasks/tasks.php");
-        const tasks = await res.json();
+            list.innerHTML = "";
 
-        const list = document.getElementById("taskList");
-        list.innerHTML = "";
+            tasks.forEach(task => {
 
-        tasks.forEach(task => {
+                const li = document.createElement("li");
+                li.dataset.id = task.id;
+                li.innerHTML = `
+                    <span class="${task.status === "completed" ? "done" : ""}">
+                        ${task.task}
+                    </span>
 
-            const li = document.createElement("li");
-            li.innerHTML = `
-                <span class="${task.status === "completed" ? "done" : ""}">
-                    ${task.task}
-                </span>
-
-                <div class="task-actions">
-                    <button class="toggle-btn" onclick="toggleTask(${task.id})"><i class="fa-solid fa-check"></i></button>
-                    <button class="delete-btn" onclick="deleteTask(${task.id})"><i class="fa-solid fa-trash"></i></button>
-                </div>
-            `;
-            list.appendChild(li);
-        });
-        
+                    <div class="task-actions">
+                        <button class="toggle-btn"><i class="fa-solid fa-check"></i></button>
+                        <button class="delete-btn"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+                list.appendChild(li);
+            });
+        } catch(err) {
+            console.error("Error loading tasks:", err);
+        }
     }
 
+    //Event delegation za toggle/delete
+    list.addEventListener("click", async (e) => {
+        const li = e.target.closest("li");
+        if(!li) return;
+
+        const id = li.dataset.id;
+
+        if(e.target.closest(".toggle-btn")){
+            await toggleTask(id);
+        }
+
+        if(e.target.closest(".delete-btn")){
+            await deleteTask(id);
+        }
+    });
+
     //POST - za slanje taskova backendu
-    document.getElementById("taskForm").addEventListener("submit", async (e) => {
+    form.addEventListener("submit", async (e) => {
 
         e.preventDefault();
 
-        const taskInput = document.getElementById("taskInput");
         const task = taskInput.value.trim();
 
         if(!task){
@@ -48,53 +69,63 @@ import { checkAuth } from "./auth.js";
             return;
         }
 
-        await fetch("http://localhost:8000/backend/api/tasks/tasks.php", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                action: "add",
-                task
-            })
-        });
+        try {
+            await fetch("http://localhost:8000/backend/api/tasks/tasks.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    action: "add",
+                    task
+                })
+            });
 
-        await loadTasks();
-        taskInput.value = "";
-    
+            taskInput.value = "";
+            await loadTasks();
+        } catch(err) {
+            console.error("Error adding task:", err);
+        }
     });
 
     //funkcija za brisanje taska
     async function deleteTask(id) {
-        
-        await fetch("http://localhost:8000/backend/api/tasks/tasks.php", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                action: "delete",
-                id
-            })
-        });
+        try {
+            await fetch("http://localhost:8000/backend/api/tasks/tasks.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    action: "delete",
+                    id
+                })
+            });
 
-        await loadTasks();
+            await loadTasks();
+        } catch(err) {
+            console.error("Error deleting task:", err);
+        }
     }
 
     //funkcija za zavrsetak taska
     async function toggleTask(id){
+        try {
+            await fetch("http://localhost:8000/backend/api/tasks/tasks.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    action: "toggle",
+                    id
+                })
+            });
 
-        await fetch("http://localhost:8000/backend/api/tasks/tasks.php", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                action: "toggle",
-                id
-            })
-        });
-
-        await loadTasks();
+            await loadTasks();
+        } catch(err) {
+            console.error("Error toggling task:", err);
+        }
     }
+
 })();
