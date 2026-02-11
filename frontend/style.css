@@ -8,8 +8,10 @@
     --primary-container-color: #E2E8F0;
     --button-color: #0EA5E9;
     --button-hover-color: #0284C7;
-    --delete-btn-color: #d26161;
-    --delete-btn-hover: #c82333;
+    --delete-btn-color: #ef4444;
+    --delete-btn-hover: #dc2626;
+    --toggle-btn-color: #28a745;
+    --toggle-btn-hover: #218838;
 }
 
 * {
@@ -46,6 +48,7 @@ button{
     border-radius: 4px;
     border: 0px;
     cursor: pointer;
+    transition: all 0.2s ease;
 }
 
 button:hover{
@@ -78,7 +81,7 @@ ul li {
 }
 
 .toggle-btn {
-    background-color: #28a745;
+    background-color: var(--toggle-btn-color);
 }
 
 .delete-btn {
@@ -86,7 +89,7 @@ ul li {
 }
 
 .toggle-btn:hover {
-    background-color: #218838;
+    background-color: var(--toggle-btn-hover);
 }
 
 .delete-btn:hover {
@@ -109,6 +112,10 @@ ul li {
 
 .toggle-btn.completed:hover {
     background-color: var(--delete-btn-hover) !important;
+}
+
+.clear-all-btn {
+    margin: 0 auto;
 }
 
 /*login/register*/
