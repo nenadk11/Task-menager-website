@@ -13,19 +13,38 @@
             <div class="greeting" id="greeting">
                 <h1>Welcome back user!</h1>
             </div>
+
             <div class="header-icons">
                 <button class="icon-btn"><i class="fas fa-bell"></i></button>
                 <button class="icon-btn"><i class="fas fa-user"></i></button>
             </div> 
         </div>
-        <h1>Todo-list</h1>
-        <form id="taskForm">
-            <input type="text" placeholder="Write your task here" name="taskInput" id="taskInput">
-            <button type="submit" name="addTask">Add Task</button>
-        </form>
-        <ul id="taskList"></ul>
-        <button id="clear-all-btn" class="clear-all-btn" style="display:none;">Clear All</button>
 
+        <div class="main-content">
+            <div class="title-section">
+                <h1>You've got <span class="task-count" id="taskCount">0</span> task today</h1>
+                <button class="add-btn" onclick="openModal()">
+                    <i class="fas fa-plus"></i> Add New
+                </button>
+            </div>
+
+            <div class="section">
+                <div class="section-header"><h2>In Progress</h2></div>
+                <div id="inProgressTasks"></div>
+            </div>
+
+            <div class="section">
+                <div class="section-header"><h2>Completed</h2></div>
+                <div id="completedTasks"></div>
+            </div>
+
+            <form id="taskForm">
+                <input type="text" placeholder="Write your task here" name="taskInput" id="taskInput">
+                <button type="submit" name="addTask">Add Task</button>
+            </form>
+            <ul id="taskList"></ul>
+            <button id="clear-all-btn" class="clear-all-btn" style="display:none;">Clear All</button>
+        </div>
     </div>
     
     <script type="module" src="js/tasks.js"></script>
