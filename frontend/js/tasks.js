@@ -38,6 +38,11 @@ modal.addEventListener("click", (e) => {
 
     console.log("Logged user:", user);
 
+    const greetingDiv = document.getElementById("greeting");
+    if (greetingDiv) {
+        greetingDiv.innerHTML = `<h1>Welcome back, ${user.username}!</h1>`;
+    }
+
     let unfinishedTasksCount = 0;
 
     const onHoldContainer = document.getElementById("onHoldTasks");
