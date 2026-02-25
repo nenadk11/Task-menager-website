@@ -31,7 +31,7 @@ body {
 .container {
     margin: 0 auto;
     padding: 40px;
-    background-color: var(--primary-container-color);
+    background-color: white;
     border-radius: 30px;
     max-width: 1400px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -124,36 +124,253 @@ body {
     font-weight: 600;
 }
 
+.task-item {
+    background-color: white;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: 0.3s ease;
+}
+
+.task-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.task-checkbox {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--button-color);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.task-checkbox.completed {
+    background-color: var(--button-color);
+    position: relative;
+}
+
+.task-checkbox.completed::after {
+    content: '✓';
+    position: absolute;
+    color: white;
+    font-size: 12px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.task-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.task-title {
+    font-size: 15px;
+    margin-bottom: 5px;
+    word-break: break-word;
+}
+
+.task-title.done {
+    text-decoration: line-through;
+    color: #9ca3af;
+}
+
+.status-badge {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-pending {
+    background-color: #fef3c7;
+    color: #f59e0b;
+}
+
+.status-completed {
+    background-color: #d1fae5;
+    color: #10b981;
+}
+
+.priority-badge {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.priority-critical {
+    color: #dc2626;
+}
+
+.priority-normal {
+    color: #f59e0b;
+}
+
+.priority-minor {
+    color: #10b981;
+}
+
+.sidebar {
+    background: #f9fafb;
+    border-radius: 20px;
+    padding: 25px;
+}
+
+.sidebar-section {
+    margin-bottom: 25px;
+}
+
+.sidebar-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 15px;
+}
+
+.stat-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.stat-label {
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 8px;
+}
+
+.stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: var(--button-color);
+    border-radius: 10px;
+    transition: width 0.5s ease;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 30px;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 500px;
+}
+
+.modal-header {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 2px solid #e5e7eb;
+    outline: none;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: var(--button-color);
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background-color: var(--button-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--button-hover-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.btn-secondary {
+    background-color: #f3f4f6;
+}
+
+.btn-secondary:hover {
+    background-color: #e5e7eb;
+}
+
+@media (max-width: 1024px) {
+    .container {
+        grid-template-columns: 1fr;
+    }
+}
+
 button:hover{
     background-color: var(--button-hover-color);
-}
-
-.toggle-btn {
-    background-color: var(--toggle-btn-color);
-}
-
-.delete-btn {
-    background-color: var(--delete-btn-color);
-}
-
-.toggle-btn:hover {
-    background-color: var(--toggle-btn-hover);
-}
-
-.delete-btn:hover {
-    background-color: var(--delete-btn-hover);
-}
-
-.done {
-    text-decoration: line-through;
-}
-
-.toggle-btn.completed {
-    background-color: var(--delete-btn-color) !important;
-}
-
-.toggle-btn.completed:hover {
-    background-color: var(--delete-btn-hover) !important;
 }
 
 .clear-all-btn {

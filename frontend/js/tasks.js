@@ -1,5 +1,37 @@
 import { checkAuth } from "./auth.js";
 
+const modal = document.getElementById("taskModal");
+const openModalBtn = document.getElementById("openModalBtn");
+const cancelBtn = document.querySelector(".btn-secondary");
+const taskTitleInput = document.getElementById("taskTitle");
+const taskPriorityInput = document.getElementById("taskPriority");
+
+let editingTaskId = null;
+
+function openModal() {
+    modal.classList.add("active");
+}
+
+function closeModal() {
+    modal.classList.remove("active");
+}
+
+if (openModalBtn) {
+    openModalBtn.addEventListener("click", () => {
+        //Resetuje se modal kad user otvori da pravi novi task
+        editingTaskId = null;
+        taskTitleInput.value = "";
+        taskPriorityInput.value = "normal";
+        openModal();
+    });
+}
+
+if (cancelBtn) cancelBtn.addEventListener("click", closeModal);
+
+modal.addEventListener("click", (e) => {
+    if (e.target === modal) closeModal();
+});
+
 (async () => {
     const user = await checkAuth();
     if(!user) return;
@@ -8,9 +40,19 @@ import { checkAuth } from "./auth.js";
 
     let unfinishedTasksCount = 0;
 
-    const list = document.getElementById("taskList");
+    const onHoldContainer = document.getElementById("onHoldTasks");
+    const completedContainer = document.getElementById("completedTasks");
+
     const form = document.getElementById("taskForm");
-    const taskInput = document.getElementById("taskInput");
+    const taskTitleInput = document.getElementById("taskTitle");
+    const taskPriorityInput = document.getElementById("taskPriority");
+
+    const taskCountEl = document.getElementById("taskCount");
+    const totalTaskEl = document.getElementById("totalTask");
+    const completedCountEl = document.getElementById("completedCount");
+    const pendingCountEl = document.getElementById("pendingCount");
+    const completionRateValue = document.getElementById("completionRateValue");
+    const completionProgress = document.getElementById("completionProgress");
 
     await loadTasks();
 
@@ -20,88 +62,146 @@ import { checkAuth } from "./auth.js";
             const res = await fetch("/backend/api/tasks/tasks.php");
             const tasks = await res.json();
 
-            unfinishedTasksCount = tasks.filter(t => t.status !== "completed").length;
+            onHoldContainer.innerHTML = "";
+            completedContainer.innerHTML = "";
 
-            list.innerHTML = "";
+            let completed = 0;
+            let pending = 0;
 
             tasks.forEach(task => {
+                const card = document.createElement("div");
+                card.className = "task-item";
+                card.dataset.id = task.id;
 
-                const li = document.createElement("li");
-                li.dataset.id = task.id;
-                li.innerHTML = `
-                    <span class="${task.status === "completed" ? "done" : ""}">
-                        ${task.task}
+                const isCompleted = task.status === "completed";
+
+                if (isCompleted) completed++;
+                else pending++;
+
+                card.innerHTML = `
+                    <div class="task-checkbox ${isCompleted ? "completed" : ""}"></div>
+
+                    <div class="task-content">
+                        <div class="task-title ${isCompleted ? "done" : ""}">
+                            ${task.task}
+                        </div>
+                    </div>
+
+                    <span class="status-badge ${isCompleted ? "status-completed" : "status-pending"}">
+                        ${isCompleted ? "Completed" : "Pending"}
                     </span>
 
-                    <div class="task-actions">
-                        <button class="toggle-btn ${task.status === "completed" ? "completed" : ""}">
-                        <i class="fa-solid ${task.status === "completed" ? "fa-rotate-left" : "fa-check"}"></i>
-                        </button>
-                        <button class="delete-btn"><i class="fa-solid fa-trash"></i></button>
+                    <div class="priority-badge priority-${task.priority}">
+                        <i class="fas fa-circle"></i>
+                        <span class="priority-text">${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}</span>
                     </div>
+
+                    <button class="icon-btn edit-btn">
+                        <i class="fas fa-pen"></i>
+                    </button>
+
+                    <button class="icon-btn delete-btn">
+                        <i class="fas fa-trash"></i>
+                    </button>
                 `;
-                list.appendChild(li);
+
+                if (isCompleted) {
+                    completedContainer.appendChild(card);
+                } else {
+                    onHoldContainer.appendChild(card);
+                }
             });
 
-            const clearBtn = document.getElementById("clear-all-btn");
+            updateStats(tasks.length, completed, pending);
 
-            if(tasks.length >= 2){
-                clearBtn.style.display = "block";
-            }else {
-                clearBtn.style.display = "none";
-            }
-
-        } catch(err) {
+        } catch (err) {
             console.error("Error loading tasks:", err);
         }
     }
 
-    //Event delegation za toggle/delete
-    list.addEventListener("click", async (e) => {
-        const li = e.target.closest("li");
-        if(!li) return;
+    //Event delegation za toggle/delete/edit
+    document.addEventListener("click", async (e) => {
+        const card = e.target.closest(".task-item");
+        if (!card) return;
 
-        const id = li.dataset.id;
+        const id = card.dataset.id;
 
-        if(e.target.closest(".toggle-btn")){
+        //Zavrsi task
+        if (e.target.closest(".task-checkbox")) {
             await toggleTask(id);
             await loadTasks();
+            return;
         }
 
-        if(e.target.closest(".delete-btn")){
+        //Obrisi task
+        if (e.target.closest(".delete-btn")) {
             await deleteTask(id);
             await loadTasks();
+            return;
+        }
+
+        //Edituj task
+        if (e.target.closest(".edit-btn")) {
+            editingTaskId = id;
+
+            const taskTitle = card.querySelector(".task-title").textContent.trim();
+            const priorityClass = card.querySelector(".priority-badge").classList;
+            let priority = "normal";
+
+            if (priorityClass.contains("priority-minor")) priority = "minor";
+            else if (priorityClass.contains("priority-normal")) priority = "normal";
+            else if (priorityClass.contains("priority-critical")) priority = "critical";
+
+            taskTitleInput.value = taskTitle;
+            taskPriorityInput.value = priority;
+
+            openModal();
+            return;
         }
     });
 
     //POST - za slanje taskova backendu
     form.addEventListener("submit", async (e) => {
-
         e.preventDefault();
 
-        const task = taskInput.value.trim();
+        const task = taskTitleInput.value.trim();
+        const priority = taskPriorityInput.value;
 
-        if(!task){
-            alert("Write a task");
-            return;
-        }
+        if (!task) return;
 
         try {
-            await fetch("/backend/api/tasks/tasks.php", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    action: "add",
-                    task
-                })
-            });
+            if (editingTaskId) {
+                //UPDATE posto editujemo
+                await fetch("/backend/api/tasks/tasks.php", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        action: "update",
+                        id: editingTaskId,
+                        task,
+                        priority
+                    })
+                });
+            } else {
+                //ADD novi task
+                await fetch("/backend/api/tasks/tasks.php", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        action: "add",
+                        task,
+                        priority
+                    })
+                });
+            }
 
-            taskInput.value = "";
+            editingTaskId = null;
+            taskTitleInput.value = "";
+            closeModal();
             await loadTasks();
-        } catch(err) {
-            console.error("Error adding task:", err);
+
+        } catch (err) {
+            console.error("Error saving task:", err);
         }
     });
 
@@ -117,9 +217,7 @@ import { checkAuth } from "./auth.js";
                     action: "delete",
                     id
                 })
-            });
-
-            await loadTasks();
+            });        
         } catch(err) {
             console.error("Error deleting task:", err);
         }
@@ -137,9 +235,7 @@ import { checkAuth } from "./auth.js";
                     action: "toggle",
                     id
                 })
-            });
-
-            await loadTasks();
+            });           
         } catch(err) {
             console.error("Error toggling task:", err);
         }
@@ -170,6 +266,20 @@ import { checkAuth } from "./auth.js";
         }catch(err) {
             console.error("Error clearing all tasks", err);
         }
+    }
+
+    //funkcija za statistiku
+    function updateStats(total, completed, pending) {
+
+        taskCountEl.textContent = pending;
+        totalTaskEl.textContent = total;
+        completedCountEl.textContent = completed;
+        pendingCountEl.textContent = pending;
+
+        const rate = total === 0 ? 0 : Math.round((completed / total) * 100);
+
+        completionRateValue.textContent = rate + "%";
+        completionProgress.style.width = rate + "%";
     }
 
     document.getElementById("clear-all-btn").addEventListener("click", clearAllTasks);

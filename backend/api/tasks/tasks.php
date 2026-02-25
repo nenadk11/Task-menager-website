@@ -30,18 +30,32 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
 
     //Action add - dodaj task
     if($data["action"] === "add"){
-        
-        //Ako je poslat task
+    
         if(!empty($data["task"])){
+
             $task = trim($data["task"]);
 
-            //Insert taska u bazu
-            $stmt = $pdo->prepare("INSERT INTO tasks (task) VALUES (:task)");
-            $stmt->execute(["task" => $task]);
+            // PRIORITY VALIDACIJA
+            $allowedPriorities = ['minor','normal','critical'];
+            $priority = 'normal';
+
+            if(!empty($data["priority"]) && in_array($data["priority"], $allowedPriorities)){
+                $priority = $data["priority"];
+            }
+
+            $stmt = $pdo->prepare("
+                INSERT INTO tasks (task, priority) 
+                VALUES (:task, :priority)
+            ");
+
+            $stmt->execute([
+                "task" => $task,
+                "priority" => $priority
+            ]);
 
             echo json_encode(["success" => true]);
 
-        }else {
+        } else {
             echo json_encode(["error" => "Task is empty"]);
         }
     }
@@ -77,6 +91,21 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
             $stmt->execute(["id" => $data["id"]]);
 
             echo json_encode(["success" => true]);
+        }
+    }
+
+    //Action update - promeni priority/ime taska
+    if($data["action"] === "update"){
+        if(!empty($data["id"]) && !empty($data["task"])){
+            $stmt = $pdo->prepare("UPDATE tasks SET task = :task, priority = :priority WHERE id = :id");
+            $stmt->execute([
+                "task" => trim($data["task"]),
+                "priority" => $data["priority"],
+                "id" => $data["id"]
+            ]);
+            echo json_encode(["success" => true]);
+        } else {
+            echo json_encode(["error" => "Missing data"]);
         }
     }
 
