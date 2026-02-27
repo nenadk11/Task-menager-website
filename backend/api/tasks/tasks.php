@@ -4,11 +4,21 @@ header("Content-Type: application/json");
 
 require_once __DIR__ . '/../../config/db.php';
 
+session_start();
+
+if (!isset($_SESSION["user"])) {
+    echo json_encode(["error" => "Unauthorized"]);
+    exit;
+}
+
+$userId = $_SESSION["user"]["id"];
+
 //GET logika
 if($_SERVER["REQUEST_METHOD"] === "GET"){
 
     //Uzme taskove iz baze
-    $stmt = $pdo->query("SELECT * FROM tasks ORDER BY id DESC");
+    $stmt = $pdo->prepare("SELECT * FROM tasks WHERE user_id = :user_id ORDER BY id DESC");
+    $stmt->execute(["user_id" => $userId]);
     $task = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     //Vrati frontendu
@@ -44,13 +54,14 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
             }
 
             $stmt = $pdo->prepare("
-                INSERT INTO tasks (task, priority) 
-                VALUES (:task, :priority)
+                INSERT INTO tasks (task, priority, user_id) 
+                VALUES (:task, :priority, :user_id)
             ");
 
             $stmt->execute([
                 "task" => $task,
-                "priority" => $priority
+                "priority" => $priority,
+                "user_id" => $userId
             ]);
 
             echo json_encode(["success" => true]);
@@ -67,8 +78,11 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
         if(!empty($data["id"])){
 
             //Brisanje taska iz baze
-            $stmt = $pdo->prepare("DELETE FROM tasks WHERE id = :id");
-            $stmt->execute(["id" => $data["id"]]);
+            $stmt = $pdo->prepare("DELETE FROM tasks WHERE id = :id AND user_id = :user_id");
+            $stmt->execute([
+                "id" => $data["id"],
+                "user_id" => $userId
+                ]);
 
             echo json_encode(["success" => true]);
         }
@@ -86,9 +100,12 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
                     WHEN status = 'pending' THEN 'completed'
                     ELSE 'pending'
                 END
-                WHERE id = :id
+                WHERE id = :id AND user_id = :user_id
             ");
-            $stmt->execute(["id" => $data["id"]]);
+            $stmt->execute([
+                "id" => $data["id"],
+                "user_id" => $userId
+                ]);
 
             echo json_encode(["success" => true]);
         }
@@ -97,11 +114,12 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
     //Action update - promeni priority/ime taska
     if($data["action"] === "update"){
         if(!empty($data["id"]) && !empty($data["task"])){
-            $stmt = $pdo->prepare("UPDATE tasks SET task = :task, priority = :priority WHERE id = :id");
+            $stmt = $pdo->prepare("UPDATE tasks SET task = :task, priority = :priority WHERE id = :id AND user_id = :user_id");
             $stmt->execute([
                 "task" => trim($data["task"]),
                 "priority" => $data["priority"],
-                "id" => $data["id"]
+                "id" => $data["id"],
+                "user_id" => $userId
             ]);
             echo json_encode(["success" => true]);
         } else {
@@ -112,8 +130,8 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
     //Action clear all - obrisi sve taskove
     if($data["action"] == "clear_all"){
         
-        $stmt = $pdo->prepare("DELETE FROM tasks");
-        $stmt->execute();
+        $stmt = $pdo->prepare("DELETE FROM tasks WHERE user_id = :user_id");
+        $stmt->execute(["user_id" => $userId]);
 
         echo json_encode(["success" => true]);
     }
