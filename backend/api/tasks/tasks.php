@@ -54,14 +54,15 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
             }
 
             $stmt = $pdo->prepare("
-                INSERT INTO tasks (task, priority, user_id) 
-                VALUES (:task, :priority, :user_id)
+                INSERT INTO tasks (task, priority, user_id, due_date) 
+                VALUES (:task, :priority, :user_id, :due_date)
             ");
 
             $stmt->execute([
                 "task" => $task,
                 "priority" => $priority,
-                "user_id" => $userId
+                "user_id" => $userId,
+                "due_date" => !empty($data["due_date"]) ? $data["due_date"] : null
             ]);
 
             echo json_encode(["success" => true]);
@@ -114,10 +115,15 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
     //Action update - promeni priority/ime taska
     if($data["action"] === "update"){
         if(!empty($data["id"]) && !empty($data["task"])){
-            $stmt = $pdo->prepare("UPDATE tasks SET task = :task, priority = :priority WHERE id = :id AND user_id = :user_id");
+            $stmt = $pdo->prepare("
+            UPDATE tasks
+            SET task = :task, priority = :priority, due_date = :due_date
+            WHERE id = :id AND user_id = :user_id
+            ");
             $stmt->execute([
                 "task" => trim($data["task"]),
                 "priority" => $data["priority"],
+                "due_date" => !empty($data["due_date"]) ? $data["due_date"] : null,
                 "id" => $data["id"],
                 "user_id" => $userId
             ]);

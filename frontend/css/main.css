@@ -196,6 +196,18 @@ body {
     font-weight: 600;
 }
 
+.due-badge {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.due-overdue span {
+    color: #dc2626;
+}
+
 .priority-critical {
     color: #dc2626;
 }
@@ -301,6 +313,12 @@ body {
     font-size: 14px;
     font-weight: 600;
     margin-bottom: 8px;
+}
+
+.optional {
+  font-size: 12px;
+  color: #999;
+  margin-left: 2px;
 }
 
 .form-group input,

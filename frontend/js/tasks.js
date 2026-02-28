@@ -5,6 +5,7 @@ const openModalBtn = document.getElementById("openModalBtn");
 const cancelBtn = document.querySelector(".btn-secondary");
 const taskTitleInput = document.getElementById("taskTitle");
 const taskPriorityInput = document.getElementById("taskPriority");
+const taskDueDateInput = document.getElementById("taskDueDate");
 
 let editingTaskId = null;
 
@@ -22,6 +23,7 @@ if (openModalBtn) {
         editingTaskId = null;
         taskTitleInput.value = "";
         taskPriorityInput.value = "normal";
+        taskDueDateInput.value = "";
         openModal();
     });
 }
@@ -31,6 +33,25 @@ if (cancelBtn) cancelBtn.addEventListener("click", closeModal);
 modal.addEventListener("click", (e) => {
     if (e.target === modal) closeModal();
 });
+
+//Funkcija za formatiranje datuma
+function formatDueDate(dueDate) {
+    if (!dueDate) return "";
+
+    const today = new Date();
+    const due = new Date(dueDate);
+
+    today.setHours(0,0,0,0);
+    due.setHours(0,0,0,0);
+
+    const diffTime = due - today;
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return "Today";
+    if (diffDays === 1) return "Tomorrow";
+    if (diffDays < 0) return `Overdue (${Math.abs(diffDays)}d)`;
+    return `In ${diffDays} days`;
+}
 
 (async () => {
     const user = await checkAuth();
@@ -49,8 +70,6 @@ modal.addEventListener("click", (e) => {
     const completedContainer = document.getElementById("completedTasks");
 
     const form = document.getElementById("taskForm");
-    const taskTitleInput = document.getElementById("taskTitle");
-    const taskPriorityInput = document.getElementById("taskPriority");
 
     const taskCountEl = document.getElementById("taskCount");
     const totalTaskEl = document.getElementById("totalTask");
@@ -77,11 +96,14 @@ modal.addEventListener("click", (e) => {
                 const card = document.createElement("div");
                 card.className = "task-item";
                 card.dataset.id = task.id;
+                card.dataset.duedate = task.due_date || "";
 
                 const isCompleted = task.status === "completed";
 
                 if (isCompleted) completed++;
                 else pending++;
+
+                const dueText = formatDueDate(task.due_date);
 
                 card.innerHTML = `
                     <div class="task-checkbox ${isCompleted ? "completed" : ""}"></div>
@@ -91,6 +113,13 @@ modal.addEventListener("click", (e) => {
                             ${task.task}
                         </div>
                     </div>
+
+                    ${task.due_date && !isCompleted ?`
+                        <div class="due-badge ${dueText.startsWith("Overdue") ? "due-overdue" : "due-normal"}">
+                            <span>${dueText}</span>
+                            <i class="fa-regular fa-alarm-clock"></i>
+                        </div>
+                    ` : ""}
 
                     <span class="status-badge ${isCompleted ? "status-completed" : "status-pending"}">
                         ${isCompleted ? "Completed" : "Pending"}
@@ -159,6 +188,7 @@ modal.addEventListener("click", (e) => {
 
             taskTitleInput.value = taskTitle;
             taskPriorityInput.value = priority;
+            taskDueDateInput.value = card.dataset.duedate || "";
 
             openModal();
             return;
@@ -171,6 +201,7 @@ modal.addEventListener("click", (e) => {
 
         const task = taskTitleInput.value.trim();
         const priority = taskPriorityInput.value;
+        const due_date = taskDueDateInput.value || null;
 
         if (!task) return;
 
@@ -184,7 +215,8 @@ modal.addEventListener("click", (e) => {
                         action: "update",
                         id: editingTaskId,
                         task,
-                        priority
+                        priority,
+                        due_date
                     })
                 });
             } else {
@@ -195,13 +227,15 @@ modal.addEventListener("click", (e) => {
                     body: JSON.stringify({
                         action: "add",
                         task,
-                        priority
+                        priority,
+                        due_date
                     })
                 });
             }
 
             editingTaskId = null;
             taskTitleInput.value = "";
+            taskDueDateInput.value = "";
             closeModal();
             await loadTasks();
 
