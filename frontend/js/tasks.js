@@ -61,7 +61,7 @@ function formatDueDate(dueDate) {
 
     const greetingDiv = document.getElementById("greeting");
     if (greetingDiv) {
-        greetingDiv.innerHTML = `<h1>Welcome back, ${user.username}!</h1>`;
+        greetingDiv.innerHTML = `<h1>Welcome back ${user.username}!</h1>`;
     }
 
     let unfinishedTasksCount = 0;
@@ -116,8 +116,8 @@ function formatDueDate(dueDate) {
 
                     ${task.due_date && !isCompleted ?`
                         <div class="due-badge ${dueText.startsWith("Overdue") ? "due-overdue" : "due-normal"}">
-                            <span>${dueText}</span>
-                            <i class="fa-regular fa-alarm-clock"></i>
+                        <i class="fa-regular fa-alarm-clock"></i>    
+                        <span>${dueText}</span>
                         </div>
                     ` : ""}
 
@@ -316,6 +316,9 @@ function formatDueDate(dueDate) {
         pendingCountEl.textContent = pending;
 
         const rate = total === 0 ? 0 : Math.round((completed / total) * 100);
+
+        const taskWordEl = document.getElementById("taskWord");
+        taskWordEl.textContent = (pending === 1) ? "task" : "tasks";
 
         completionRateValue.textContent = rate + "%";
         completionProgress.style.width = rate + "%";
