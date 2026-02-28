@@ -51,6 +51,10 @@ body {
     transition: all 0.3s ease;
 }
 
+.icon-btn:hover {
+    background-color: #e5e7eb;
+}
+
 .main-content {
     padding-right: 20px;
 }
@@ -90,6 +94,8 @@ body {
 .add-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    background-color: var(--button-hover-color);
+    color: white;
 }
 
 .section {
@@ -326,6 +332,7 @@ body {
     font-size: 14px;
     cursor: pointer;
     transition: all 0.3s ease;
+    font-weight: 600;
 }
 
 .btn-primary {
@@ -351,10 +358,6 @@ body {
     .container {
         grid-template-columns: 1fr;
     }
-}
-
-button:hover{
-    background-color: var(--button-hover-color);
 }
 
 .clear-all-btn {

@@ -101,11 +101,11 @@ modal.addEventListener("click", (e) => {
                         <span class="priority-text">${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}</span>
                     </div>
 
-                    <button class="icon-btn edit-btn">
+                    <button class="icon-btn edit-btn" style="width:35px;height:35px;">
                         <i class="fas fa-pen"></i>
                     </button>
 
-                    <button class="icon-btn delete-btn">
+                    <button class="icon-btn delete-btn" style="width:35px;height:35px;">
                         <i class="fas fa-trash"></i>
                     </button>
                 `;
