@@ -100,6 +100,18 @@ function formatDueDate(dueDate) {
 
                 const isCompleted = task.status === "completed";
 
+                let displayStatus = isCompleted ? "Completed" : "Pending";
+
+                if (!isCompleted && task.due_date) {
+                    const today = new Date();
+                    const due = new Date(task.due_date);
+                    today.setHours(0,0,0,0);
+                    due.setHours(0,0,0,0);
+                    if (due < today) {
+                        displayStatus = "Expired";
+                    }
+                }
+
                 if (isCompleted) completed++;
                 else pending++;
 
@@ -121,8 +133,12 @@ function formatDueDate(dueDate) {
                         </div>
                     ` : ""}
 
-                    <span class="status-badge ${isCompleted ? "status-completed" : "status-pending"}">
-                        ${isCompleted ? "Completed" : "Pending"}
+                    <span class="status-badge ${
+                        displayStatus === "Completed" ? "status-completed" :
+                        displayStatus === "Expired" ? "status-expired" :
+                        "status-pending"
+                    }">
+                        ${displayStatus}
                     </span>
 
                     <div class="priority-badge priority-${task.priority}">
