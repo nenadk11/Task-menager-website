@@ -1,29 +1,13 @@
-:root{
-    --primary-dm-bg-color: #020617;
-    --primary-dm-font-color: #F1F5F9;
-    --primary-dm-container-color: #0F172A;
-    --button-dm-color: #38BDF8;
-    --primary-bg-color: #f0f2f5;
-    --primary-font-color: #0F172A;
-    --primary-container-color: #E2E8F0;
-    --button-color: #0EA5E9;
-    --button-hover-color: #0284C7;
-    --delete-btn-color: #ef4444;
-    --delete-btn-hover: #dc2626;
-    --toggle-btn-color: #28a745;
-    --toggle-btn-hover: #218838;
-}
-
 * {
     box-sizing: border-box;
     padding: 0px;
     margin: 0px;
+    font-family: "Poppins", serif;
 }
 
 body {
     background-color: var(--primary-bg-color);
     color: var(--primary-font-color);
-    font-family: 'Segoe UI', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     min-height: 100vh;
     padding: 40px 20px;
 }
@@ -375,66 +359,4 @@ button:hover{
 
 .clear-all-btn {
     margin: 0 auto;
-}
-
-/* login/register */
-.form-box {
-    width: 100%;
-    max-width: 450px;
-    padding: 30px;
-    border-radius: 10px;
-    margin: 0 15px;
-    background-color: var(--primary-container-color);
-}
-
-.form-box h2 {
-    font-size: 34px;
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.form-box input {
-    width: 100%;
-    padding: 12px;
-    border-radius: 6px;
-    border: none;
-    outline: none;
-    font-size: 16px;
-}
-
-.form-group {
-    margin-bottom: 10px;
-}
-
-.error-msg {
-    display: block;
-    font-size: 12px;
-    color: #ef4444;
-    min-height: 15px;
-    margin-top: 3px;
-}
-
-.form-box button {
-    width: 100%;
-    padding: 12px;
-    font-size: 16px;
-    font-weight: 500;
-    margin-bottom: 15px;
-    transition: 0.5;
-    color: var(--primary-dm-font-color);
-}
-
-.form-box p {
-    font-size: 14.5px;
-    text-align: center;
-    margin-bottom: 10px;
-}
-
-.form-box p a {
-    color: var(--button-color);
-    text-decoration: none;
-}
-
-.form-box p a:hover {
-    text-decoration: underline;
 }
