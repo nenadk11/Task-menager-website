@@ -107,11 +107,32 @@ body {
     align-items: center;
     gap: 10px;
     margin-bottom: 20px;
+    justify-content: space-between;
 }
 
 .section-header h2 {
     font-size: 22px;
     font-weight: 600;
+}
+
+.sort-btn {
+    border-radius: 12px;
+    padding: 6px 14px;
+    font-size: 14px;
+    font-weight: 500;
+    gap: 3px;
+    margin-right: 15px;
+    border: none;
+    background-color: var(--primary-bg-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.sort-btn:hover {
+    background-color: #e5e7eb;
 }
 
 .task-item {

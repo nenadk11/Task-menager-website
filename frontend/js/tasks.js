@@ -78,7 +78,40 @@ function formatDueDate(dueDate) {
     const completionRateValue = document.getElementById("completionRateValue");
     const completionProgress = document.getElementById("completionProgress");
 
+    const sortBtn = document.getElementById("sortBtn");
+    let currentSort = "default";
+
+    const sortModes = ["default", "due", "priority-high", "priority-low"];
+
+    const savedSort = localStorage.getItem("taskSortMode");
+    if (savedSort && sortModes.includes(savedSort)) {
+        currentSort = savedSort;
+    }
+
+    updateSortButtonText();
     await loadTasks();
+
+    sortBtn.addEventListener("click", () => {
+        const currentIndex = sortModes.indexOf(currentSort);
+        const nextIndex = (currentIndex + 1) % sortModes.length;
+
+        currentSort = sortModes[nextIndex];
+
+        localStorage.setItem("taskSortMode", currentSort);
+
+        updateSortButtonText();
+        loadTasks();
+    });
+
+    function updateSortButtonText() {
+        let text = "Default";
+
+        if (currentSort === "due") text = "Due date";
+        if (currentSort === "priority-high") text = "High Priority";
+        if (currentSort === "priority-low") text = "Low Priority";
+
+        sortBtn.innerHTML = `<i class="fa-solid fa-sort"></i> Sort: ${text}`;
+    }
 
     //GET - za ucitavanje taskova iz backenda
     async function loadTasks() {
@@ -92,7 +125,31 @@ function formatDueDate(dueDate) {
             let completed = 0;
             let pending = 0;
 
-            tasks.forEach(task => {
+            const pendingTasks = tasks.filter(t => t.status !== "completed");
+            const completedTasks = tasks.filter(t => t.status === "completed");
+
+            //Sortiramo samo pending u zavisnosti od moda
+            if (currentSort === "due") {
+                pendingTasks.sort((a, b) => {
+                    if (!a.due_date) return 1;
+                    if (!b.due_date) return -1;
+                    return new Date(a.due_date) - new Date(b.due_date);
+                });
+            }
+
+            if (currentSort === "priority-high") {
+                const order = { critical: 3, normal: 2, minor: 1 };
+                pendingTasks.sort((a, b) => order[b.priority] - order[a.priority]);
+            }
+
+            if (currentSort === "priority-low") {
+                const order = { critical: 3, normal: 2, minor: 1 };
+                pendingTasks.sort((a, b) => order[a.priority] - order[b.priority]);
+            }
+
+            const sortedTasks = [...pendingTasks, ...completedTasks];
+
+            sortedTasks.forEach(task => {
                 const card = document.createElement("div");
                 card.className = "task-item";
                 card.dataset.id = task.id;
