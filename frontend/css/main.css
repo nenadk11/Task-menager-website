@@ -250,6 +250,9 @@ body {
     background: #f9fafb;
     border-radius: 20px;
     padding: 25px;
+    position: sticky;
+    top: 50px;
+    align-self: flex-start;
 }
 
 .sidebar-section {
