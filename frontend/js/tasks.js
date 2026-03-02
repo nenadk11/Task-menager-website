@@ -64,8 +64,6 @@ function formatDueDate(dueDate) {
         greetingDiv.innerHTML = `<h1>Welcome back ${user.username}!</h1>`;
     }
 
-    let unfinishedTasksCount = 0;
-
     const onHoldContainer = document.getElementById("onHoldTasks");
     const completedContainer = document.getElementById("completedTasks");
 
@@ -77,6 +75,7 @@ function formatDueDate(dueDate) {
     const pendingCountEl = document.getElementById("pendingCount");
     const completionRateValue = document.getElementById("completionRateValue");
     const completionProgress = document.getElementById("completionProgress");
+    const clearCompletedBtn = document.getElementById("clear-completed-btn");
 
     const sortBtn = document.getElementById("sortBtn");
     let currentSort = "default";
@@ -219,6 +218,12 @@ function formatDueDate(dueDate) {
                 }
             });
 
+            if (completed > 0) {
+                clearCompletedBtn.style.display = "inline-flex"; 
+            } else {
+                clearCompletedBtn.style.display = "none";
+            }
+            
             updateStats(tasks.length, completed, pending);
 
         } catch (err) {
@@ -353,13 +358,9 @@ function formatDueDate(dueDate) {
         }
     }
 
-    async function clearAllTasks(){
+    async function clearCompletedTasks(){
 
-        let message = "Delete all tasks?";
-
-        if(unfinishedTasksCount > 0){
-            message = `You have ${unfinishedTasksCount} unfinished task${unfinishedTasksCount > 1 ? "s" : ""}. Are you sure you want to delete all tasks?`;
-        }
+        let message = "Delete all completed tasks?";
 
         if(!confirm(message)) return;
 
@@ -370,13 +371,13 @@ function formatDueDate(dueDate) {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    action: "clear_all"
+                    action: "clear_completed"
                 })
             });
 
             await loadTasks();
         }catch(err) {
-            console.error("Error clearing all tasks", err);
+            console.error("Error deleting completed tasks", err);
         }
     }
 
@@ -397,7 +398,7 @@ function formatDueDate(dueDate) {
         completionProgress.style.width = rate + "%";
     }
 
-    document.getElementById("clear-all-btn").addEventListener("click", clearAllTasks);
+    clearCompletedBtn.addEventListener("click", clearCompletedTasks);
 
 
 })();

@@ -134,9 +134,13 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
     }
 
     //Action clear all - obrisi sve taskove
-    if($data["action"] == "clear_all"){
+    if($data["action"] == "clear_completed"){
         
-        $stmt = $pdo->prepare("DELETE FROM tasks WHERE user_id = :user_id");
+        $stmt = $pdo->prepare("
+            DELETE FROM tasks
+            WHERE user_id = :user_id
+            AND status = 'completed'
+            ");
         $stmt->execute(["user_id" => $userId]);
 
         echo json_encode(["success" => true]);

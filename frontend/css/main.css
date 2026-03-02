@@ -115,7 +115,7 @@ body {
     font-weight: 600;
 }
 
-.sort-btn {
+.sort-btn, .clear-completed-btn {
     border-radius: 12px;
     padding: 6px 14px;
     font-size: 14px;
@@ -131,7 +131,7 @@ body {
     transition: all 0.3s ease;
 }
 
-.sort-btn:hover {
+.sort-btn:hover, .clear-completed-btn:hover {
     background-color: #e5e7eb;
 }
 
