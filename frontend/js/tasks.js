@@ -76,6 +76,7 @@ function formatDueDate(dueDate) {
     const completionRateValue = document.getElementById("completionRateValue");
     const completionProgress = document.getElementById("completionProgress");
     const clearCompletedBtn = document.getElementById("clear-completed-btn");
+    const filterSelect = document.getElementById("taskFilter");
 
     const sortBtn = document.getElementById("sortBtn");
     let currentSort = "default";
@@ -87,9 +88,15 @@ function formatDueDate(dueDate) {
         currentSort = savedSort;
     }
 
+    const savedFilter = localStorage.getItem("taskFilter");
+    if (savedFilter) {
+        filterSelect.value = savedFilter;
+    }
+
     updateSortButtonText();
     await loadTasks();
 
+    //Pamti sort koji je bio
     sortBtn.addEventListener("click", () => {
         const currentIndex = sortModes.indexOf(currentSort);
         const nextIndex = (currentIndex + 1) % sortModes.length;
@@ -102,6 +109,7 @@ function formatDueDate(dueDate) {
         loadTasks();
     });
 
+    //Funkcija za sort
     function updateSortButtonText() {
         let text = "Default";
 
@@ -153,10 +161,11 @@ function formatDueDate(dueDate) {
                 card.className = "task-item";
                 card.dataset.id = task.id;
                 card.dataset.duedate = task.due_date || "";
+                card.dataset.priority = task.priority;
 
                 const isCompleted = task.status === "completed";
 
-                let displayStatus = isCompleted ? "Completed" : "Pending";
+                let displayStatus = isCompleted ? "completed" : "pending";
 
                 if (!isCompleted && task.due_date) {
                     const today = new Date();
@@ -164,9 +173,11 @@ function formatDueDate(dueDate) {
                     today.setHours(0,0,0,0);
                     due.setHours(0,0,0,0);
                     if (due < today) {
-                        displayStatus = "Expired";
+                        displayStatus = "expired";
                     }
                 }
+
+                card.dataset.status = displayStatus;
 
                 if (isCompleted) completed++;
                 else pending++;
@@ -190,8 +201,8 @@ function formatDueDate(dueDate) {
                     ` : ""}
 
                     <span class="status-badge ${
-                        displayStatus === "Completed" ? "status-completed" :
-                        displayStatus === "Expired" ? "status-expired" :
+                        displayStatus === "completed" ? "status-completed" :
+                        displayStatus === "expired" ? "status-expired" :
                         "status-pending"
                     }">
                         ${displayStatus}
@@ -223,9 +234,10 @@ function formatDueDate(dueDate) {
             } else {
                 clearCompletedBtn.style.display = "none";
             }
-            
+
             updateStats(tasks.length, completed, pending);
 
+            applyFilter();
         } catch (err) {
             console.error("Error loading tasks:", err);
         }
@@ -358,6 +370,7 @@ function formatDueDate(dueDate) {
         }
     }
 
+    //Funlcija za brisanje completed taskova
     async function clearCompletedTasks(){
 
         let message = "Delete all completed tasks?";
@@ -379,6 +392,36 @@ function formatDueDate(dueDate) {
         }catch(err) {
             console.error("Error deleting completed tasks", err);
         }
+    }
+
+    //Pamti selectovani value na filteru
+    filterSelect.addEventListener("change", () => {
+        const value = filterSelect.value;
+        localStorage.setItem("taskFilter", value);
+        applyFilter();
+    });
+
+    //Funkcija za filter
+    function applyFilter() {
+        const value = filterSelect.value.toLowerCase();
+        const cards = onHoldContainer.querySelectorAll(".task-item");
+
+        cards.forEach(card => {
+            const status = card.dataset.status;
+            const priority = card.dataset.priority;
+
+            let show = false;
+
+            if (["pending", "expired"].includes(value)) {
+                show = status === value;
+            } else if (["minor", "normal", "critical"].includes(value)) {
+                show = priority === value;
+            } else {
+                show = true;
+            }
+
+            card.style.display = show ? "flex" : "none";
+        });
     }
 
     //funkcija za statistiku

@@ -35,6 +35,17 @@
             <div class="section">
                 <div class="section-header">
                     <h2>On Hold</h2>
+                    <div class="filter-container">
+                        <label for="taskFilter">Show Tasks:</label>
+                        <select id="taskFilter">
+                            <option value="all">All</option>
+                            <option value="pending">Pending</option>
+                            <option value="expired">Expired</option>
+                            <option value="minor">Minor</option>
+                            <option value="normal">Normal</option>
+                            <option value="critical">Critical</option>
+                        </select>
+                    </div>
                     <button id="sortBtn" class="sort-btn">
                         <i class="fa-solid fa-sort"></i> Sort: Default
                     </button>
