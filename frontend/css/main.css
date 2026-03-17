@@ -267,6 +267,123 @@ body {
     color: #10b981;
 }
 
+.subtask-card {
+    margin-left: 20px;
+    padding: 15px;
+    background-color: #fafafa;
+    position: relative;
+    transform: translateY(-5px);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.subtask-checkbox {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid var(--button-color);
+    cursor: pointer;
+}
+
+.subtask-checkbox * {
+    pointer-events: none;
+}
+
+.subtask-checkbox.completed {
+    background-color: var(--button-color);
+    position: relative;
+}
+
+.subtask-checkbox.completed::after {
+    content: '✓';
+    position: absolute;
+    color: white;
+    font-size: 12px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.task-group {
+    margin-bottom: 15px;
+}
+
+.subtasks-wrapper {
+    position: relative;
+    margin-left: 40px;
+    padding-left: 20px;
+}
+
+.subtasks-wrapper::before {
+    content: "";
+    position: absolute;
+    left: 10px;
+    top: -10px;
+    bottom: 0;
+    width: 2px;
+    background: #e5e7eb;
+}
+
+.subtasks-wrapper.open .subtask-card{
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.subtasks-wrapper.open .subtask-card:hover {
+    transform: translateX(5px);
+}
+
+.subtask-card::before {
+    content: "";
+    position: absolute;
+    left: -20px;
+    top: 50%;
+    width: 20px;
+    height: 2px;
+    background: #e5e7eb;
+}
+
+.subtasks-wrapper{
+    margin-left: 35px;
+    margin-top: 8px;
+
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+
+    transition: max-height 0.3s ease, opacity 0.2s ease;
+}
+
+.subtasks-wrapper.open{
+    max-height: 500px;
+    opacity: 1;
+}
+
+.expand-btn{
+    display:flex;
+    align-items:center;
+    gap:5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.expand-btn i{
+    transition: transform 0.2s ease;
+}
+
+.expand-btn.open i{
+    transform: rotate(90deg);
+}
+
+.subtask-count{
+    font-size:12px;
+    color:#888;
+    margin-right:6px;
+    text-align:center;
+}
+
 .sidebar {
     background: #f9fafb;
     border-radius: 20px;
@@ -428,6 +545,39 @@ body {
 
 #taskDueDate::-webkit-calendar-picker-indicator:hover {
     cursor: pointer;
+}
+
+.subtask-row{
+    display:flex;
+    gap:8px;
+    margin-bottom:6px;
+}
+
+.subtask-input{
+    flex:1;
+}
+
+.remove-subtask{
+    background:none;
+    border:none;
+    cursor:pointer;
+    font-size:16px;
+    font-weight: 600;
+    color:#888;
+}
+
+.remove-subtask:hover{
+    color:#dc2626;
+    transition: all 0.3s ease;
+}
+
+.add-subtask-btn{
+    margin-top:6px;
+    font-weight: 500;
+    background:none;
+    border:none;
+    color:var(--button-color);
+    cursor:pointer;
 }
 
 @media (max-width: 1024px) {

@@ -19,10 +19,31 @@ if($_SERVER["REQUEST_METHOD"] === "GET"){
     //Uzme taskove iz baze
     $stmt = $pdo->prepare("SELECT * FROM tasks WHERE user_id = :user_id ORDER BY id DESC");
     $stmt->execute(["user_id" => $userId]);
-    $task = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    //Uzme sve subtaskove
+    $stmtSub = $pdo->prepare("
+        SELECT subtasks.*
+        FROM subtasks
+        JOIN tasks ON subtasks.task_id = tasks.id
+        WHERE tasks.user_id = :user_id
+    ");
+    $stmtSub->execute(["user_id" => $userId]);
+    $subtasks = $stmtSub->fetchAll(PDO::FETCH_ASSOC);
+
+    //Mapira subtasks po task_id
+    $subtasksByTask = [];
+    foreach($subtasks as $sub){
+        $subtasksByTask[$sub["task_id"]][] = $sub;
+    }
+
+    //Dodaje subtask svakom tasku
+    foreach($tasks as &$task){
+        $task["subtasks"] = $subtasksByTask[$task["id"]] ?? [];
+    }
 
     //Vrati frontendu
-    echo json_encode($task);
+    echo json_encode($tasks);
     exit;
 }
 
@@ -65,6 +86,25 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
                 "due_date" => !empty($data["due_date"]) ? $data["due_date"] : null
             ]);
 
+            $taskId = $pdo->lastInsertId();
+
+            if(!empty($data["subtasks"]) && is_array($data["subtasks"])){
+
+                $stmtSub = $pdo->prepare("
+                    INSERT INTO subtasks (task_id, title) 
+                    VALUES (:task_id, :title)
+                ");
+
+                foreach($data["subtasks"] as $sub){
+                    if(trim($sub) !== ""){
+                        $stmtSub->execute([
+                            "task_id" => $taskId,
+                            "title" => trim($sub)
+                        ]);
+                    }
+                }
+            }
+
             echo json_encode(["success" => true]);
 
         } else {
@@ -94,19 +134,47 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
 
         if(!empty($data["id"])){
 
-            //Promena statusa taska u bazi
+            //Uzmi trenutni status taska
             $stmt = $pdo->prepare("
-                UPDATE tasks
-                SET status = CASE
-                    WHEN status = 'pending' THEN 'completed'
-                    ELSE 'pending'
-                END
+                SELECT status 
+                FROM tasks 
                 WHERE id = :id AND user_id = :user_id
             ");
+
             $stmt->execute([
                 "id" => $data["id"],
                 "user_id" => $userId
-                ]);
+            ]);
+
+            $currentStatus = $stmt->fetchColumn();
+
+            //Odredi novi status
+            $newStatus = ($currentStatus === "completed") ? "pending" : "completed";
+
+            //Update task
+            $stmt = $pdo->prepare("
+                UPDATE tasks
+                SET status = :status
+                WHERE id = :id AND user_id = :user_id
+            ");
+
+            $stmt->execute([
+                "status" => $newStatus,
+                "id" => $data["id"],
+                "user_id" => $userId
+            ]);
+
+            //Update svih subtaskova
+            $stmt = $pdo->prepare("
+                UPDATE subtasks
+                SET status = :status
+                WHERE task_id = :task_id
+            ");
+
+            $stmt->execute([
+                "status" => $newStatus,
+                "task_id" => $data["id"]
+            ]);
 
             echo json_encode(["success" => true]);
         }
@@ -115,11 +183,13 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
     //Action update - promeni priority/ime taska
     if($data["action"] === "update"){
         if(!empty($data["id"]) && !empty($data["task"])){
+
             $stmt = $pdo->prepare("
             UPDATE tasks
             SET task = :task, priority = :priority, due_date = :due_date
             WHERE id = :id AND user_id = :user_id
             ");
+
             $stmt->execute([
                 "task" => trim($data["task"]),
                 "priority" => $data["priority"],
@@ -127,7 +197,38 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
                 "id" => $data["id"],
                 "user_id" => $userId
             ]);
+
+            //SUBTASK UPDATE
+            if(isset($data["subtasks"])){
+
+                //Obriši stare subtasks
+                $stmtDel = $pdo->prepare("
+                    DELETE FROM subtasks
+                    WHERE task_id = :task_id
+                ");
+
+                $stmtDel->execute([
+                    "task_id" => $data["id"]
+                ]);
+
+                //Dodaj nove subtasks
+                $stmtSub = $pdo->prepare("
+                    INSERT INTO subtasks (task_id, title)
+                    VALUES (:task_id, :title)
+                ");
+
+                foreach($data["subtasks"] as $sub){
+                    if(trim($sub) !== ""){
+                        $stmtSub->execute([
+                            "task_id" => $data["id"],
+                            "title" => trim($sub)
+                        ]);
+                    }
+                }
+            }
+
             echo json_encode(["success" => true]);
+
         } else {
             echo json_encode(["error" => "Missing data"]);
         }
@@ -144,6 +245,87 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
         $stmt->execute(["user_id" => $userId]);
 
         echo json_encode(["success" => true]);
+    }
+
+    //Action toggle subtask - promeni status subtaska
+    if($data["action"] === "toggle_subtask"){
+
+        if(!empty($data["id"])){
+
+            //Promeni status subtaska
+            $stmt = $pdo->prepare("
+                UPDATE subtasks
+                JOIN tasks ON subtasks.task_id = tasks.id
+                SET subtasks.status = CASE
+                    WHEN subtasks.status = 'pending' THEN 'completed'
+                    ELSE 'pending'
+                END
+                WHERE subtasks.id = :id AND tasks.user_id = :user_id
+            ");
+
+            $stmt->execute([
+                "id" => $data["id"],
+                "user_id" => $userId
+            ]);
+
+            //Uzmi task_id tog subtaska
+            $stmt = $pdo->prepare("
+                SELECT task_id 
+                FROM subtasks 
+                WHERE id = :id
+            ");
+            $stmt->execute(["id" => $data["id"]]);
+            $taskId = $stmt->fetchColumn();
+
+            //Koliko ima ukupno subtasks
+            $stmt = $pdo->prepare("
+                SELECT COUNT(*) 
+                FROM subtasks 
+                WHERE task_id = :task_id
+            ");
+            $stmt->execute(["task_id" => $taskId]);
+            $total = $stmt->fetchColumn();
+
+            //Koliko je completed
+            $stmt = $pdo->prepare("
+                SELECT COUNT(*) 
+                FROM subtasks 
+                WHERE task_id = :task_id AND status = 'completed'
+            ");
+            $stmt->execute(["task_id" => $taskId]);
+            $completed = $stmt->fetchColumn();
+
+            //Ako su svi completed - task completed
+            if($total > 0 && $total == $completed){
+
+                $stmt = $pdo->prepare("
+                    UPDATE tasks
+                    SET status = 'completed'
+                    WHERE id = :task_id AND user_id = :user_id
+                ");
+
+                $stmt->execute([
+                    "task_id" => $taskId,
+                    "user_id" => $userId
+                ]);
+
+            } else {
+
+                //Ako nije sve completed - task vrati na pending
+                $stmt = $pdo->prepare("
+                    UPDATE tasks
+                    SET status = 'pending'
+                    WHERE id = :task_id AND user_id = :user_id
+                ");
+
+                $stmt->execute([
+                    "task_id" => $taskId,
+                    "user_id" => $userId
+                ]);
+            }
+
+            echo json_encode(["success" => true]);
+        }
     }
 
 }

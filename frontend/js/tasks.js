@@ -6,6 +6,10 @@ const cancelBtn = document.querySelector(".btn-secondary");
 const taskTitleInput = document.getElementById("taskTitle");
 const taskPriorityInput = document.getElementById("taskPriority");
 const taskDueDateInput = document.getElementById("taskDueDate");
+const subtasksContainer = document.getElementById("subtasksContainer");
+const addSubtaskBtn = document.getElementById("addSubtaskBtn");
+
+let expandedTasks = new Set();
 
 let editingTaskId = null;
 
@@ -24,6 +28,7 @@ if (openModalBtn) {
         taskTitleInput.value = "";
         taskPriorityInput.value = "normal";
         taskDueDateInput.value = "";
+        subtasksContainer.innerHTML = "";
         openModal();
     });
 }
@@ -96,6 +101,34 @@ function formatDueDate(dueDate) {
     updateSortButtonText();
     await loadTasks();
 
+    //Dodavanje subtask inputa
+    if(addSubtaskBtn){
+        addSubtaskBtn.addEventListener("click", () => {
+
+            const wrapper = document.createElement("div");
+            wrapper.classList.add("subtask-row");
+
+            const input = document.createElement("input");
+            input.type = "text";
+            input.placeholder = "Subtask title";
+            input.classList.add("subtask-input");
+
+            const removeBtn = document.createElement("button");
+            removeBtn.type = "button";
+            removeBtn.textContent = "✕";
+            removeBtn.classList.add("remove-subtask");
+
+            removeBtn.addEventListener("click", () => {
+                wrapper.remove();
+            });
+
+            wrapper.appendChild(input);
+            wrapper.appendChild(removeBtn);
+
+            subtasksContainer.appendChild(wrapper);
+        });
+    }
+
     //Pamti sort koji je bio
     sortBtn.addEventListener("click", () => {
         const currentIndex = sortModes.indexOf(currentSort);
@@ -157,11 +190,19 @@ function formatDueDate(dueDate) {
             const sortedTasks = [...pendingTasks, ...completedTasks];
 
             sortedTasks.forEach(task => {
+                const group = document.createElement("div");
+                group.className = "task-group";
+                group.dataset.taskId = task.id;
                 const card = document.createElement("div");
                 card.className = "task-item";
                 card.dataset.id = task.id;
+                group.dataset.subtasks = JSON.stringify(task.subtasks || []);
                 card.dataset.duedate = task.due_date || "";
                 card.dataset.priority = task.priority;
+                group.appendChild(card);
+
+                const totalSubs = task.subtasks ? task.subtasks.length : 0;
+                const doneSubs = task.subtasks ? task.subtasks.filter(s => s.status === "completed").length : 0;
 
                 const isCompleted = task.status === "completed";
 
@@ -186,6 +227,15 @@ function formatDueDate(dueDate) {
 
                 card.innerHTML = `
                     <div class="task-checkbox ${isCompleted ? "completed" : ""}"></div>
+
+                    ${task.subtasks && task.subtasks.length > 0 ? `
+                        <button class="expand-btn">
+                            <i class="fas fa-chevron-right"></i>
+                            <span class="subtask-count">
+                                ${doneSubs}/${totalSubs}
+                            </span>
+                        </button>
+                    ` : ""}
 
                     <div class="task-content">
                         <div class="task-title ${isCompleted ? "done" : ""}">
@@ -222,10 +272,47 @@ function formatDueDate(dueDate) {
                     </button>
                 `;
 
+                //Render subtasks ako postoje
+                if(task.subtasks && task.subtasks.length > 0){
+
+                    const subWrapper = document.createElement("div");
+                    subWrapper.className = "subtasks-wrapper";
+
+                    task.subtasks.forEach(sub => {
+
+                        const subCard = document.createElement("div");
+                        subCard.className = "task-item subtask-card";
+
+                        subCard.innerHTML = `
+                            <div class="subtask-checkbox ${sub.status === "completed" ? "completed" : ""}" 
+                                data-subtask-id="${sub.id}"></div>
+
+                            <div class="task-content">
+                                <div class="task-title ${sub.status === "completed" ? "done" : ""}" style="font-size:13px;font-weight:400">
+                                    ${sub.title}
+                                </div>
+                            </div>
+                        `;
+
+                        subWrapper.appendChild(subCard);
+                    });
+
+                    if(expandedTasks.has(String(task.id))){
+                        subWrapper.classList.add("open");
+
+                        const btn = group.querySelector(".expand-btn");
+                        if(btn){
+                            btn.classList.add("open");
+                        }
+                    }
+
+                    group.appendChild(subWrapper);
+                }
+
                 if (isCompleted) {
-                    completedContainer.appendChild(card);
+                    completedContainer.appendChild(group);
                 } else {
-                    onHoldContainer.appendChild(card);
+                    onHoldContainer.appendChild(group);
                 }
             });
 
@@ -245,10 +332,60 @@ function formatDueDate(dueDate) {
 
     //Event delegation za toggle/delete/edit
     document.addEventListener("click", async (e) => {
+
+        //Toggle subtask
+        const subCheckbox = e.target.closest(".subtask-card")?.querySelector(".subtask-checkbox");
+
+        if(subCheckbox){
+
+            const subId = subCheckbox.dataset.subtaskId;
+
+            const res = await fetch("/backend/api/tasks/tasks.php", {
+                method:"POST",
+                headers:{
+                    "Content-Type":"application/json"
+                },
+                body: JSON.stringify({
+                    action:"toggle_subtask",
+                    id: subId
+                })
+            });
+
+            const data = await res.json();
+
+            if(data.success){
+                await loadTasks();   
+            }
+            
+            return;
+        }
+
         const card = e.target.closest(".task-item");
         if (!card) return;
 
         const id = card.dataset.id;
+
+        //Expanduj subtaskove
+        if (e.target.closest(".expand-btn")) {
+
+            const btn = e.target.closest(".expand-btn");
+            const group = btn.closest(".task-group");
+            const wrapper = group.querySelector(".subtasks-wrapper");
+            const taskId = group.dataset.taskId;
+
+            if(wrapper){
+                wrapper.classList.toggle("open");
+                btn.classList.toggle("open");
+
+                if(wrapper.classList.contains("open")){
+                    expandedTasks.add(taskId);
+                }else{
+                    expandedTasks.delete(taskId);
+                }
+            }
+
+            return;
+        }
 
         //Zavrsi task
         if (e.target.closest(".task-checkbox")) {
@@ -267,6 +404,32 @@ function formatDueDate(dueDate) {
         //Edituj task
         if (e.target.closest(".edit-btn")) {
             editingTaskId = id;
+
+            subtasksContainer.innerHTML = "";
+            const group = card.closest(".task-group");
+            const subtasks = JSON.parse(group.dataset.subtasks || "[]");
+
+            subtasks.forEach(sub => {
+                const wrapper = document.createElement("div");
+                wrapper.classList.add("subtask-row");
+
+                const input = document.createElement("input");
+                input.type = "text";
+                input.value = sub.title;
+                input.classList.add("subtask-input");
+
+                const removeBtn = document.createElement("button");
+                removeBtn.type = "button";
+                removeBtn.textContent = "✕";
+                removeBtn.classList.add("remove-subtask");
+
+                removeBtn.onclick = () => wrapper.remove();
+
+                wrapper.appendChild(input);
+                wrapper.appendChild(removeBtn);
+
+                subtasksContainer.appendChild(wrapper);
+            });
 
             const taskTitle = card.querySelector(".task-title").textContent.trim();
             const priorityClass = card.querySelector(".priority-badge").classList;
@@ -293,6 +456,15 @@ function formatDueDate(dueDate) {
         const priority = taskPriorityInput.value;
         const due_date = taskDueDateInput.value || null;
 
+        const subtasks = [];
+
+        document.querySelectorAll(".subtask-input").forEach(input => {
+            const value = input.value.trim();
+            if(value !== ""){
+                subtasks.push(value);
+            }
+        });
+
         if (!task) return;
 
         try {
@@ -306,7 +478,8 @@ function formatDueDate(dueDate) {
                         id: editingTaskId,
                         task,
                         priority,
-                        due_date
+                        due_date,
+                        subtasks
                     })
                 });
             } else {
@@ -318,7 +491,8 @@ function formatDueDate(dueDate) {
                         action: "add",
                         task,
                         priority,
-                        due_date
+                        due_date,
+                        subtasks
                     })
                 });
             }
@@ -404,9 +578,12 @@ function formatDueDate(dueDate) {
     //Funkcija za filter
     function applyFilter() {
         const value = filterSelect.value.toLowerCase();
-        const cards = onHoldContainer.querySelectorAll(".task-item");
+        const groups = onHoldContainer.querySelectorAll(".task-group");
 
-        cards.forEach(card => {
+        groups.forEach(group => {
+
+            const card = group.querySelector(".task-item");
+
             const status = card.dataset.status;
             const priority = card.dataset.priority;
 
@@ -414,13 +591,15 @@ function formatDueDate(dueDate) {
 
             if (["pending", "expired"].includes(value)) {
                 show = status === value;
-            } else if (["minor", "normal", "critical"].includes(value)) {
+            } 
+            else if (["minor", "normal", "critical"].includes(value)) {
                 show = priority === value;
-            } else {
+            } 
+            else {
                 show = true;
             }
 
-            card.style.display = show ? "flex" : "none";
+            group.style.display = show ? "block" : "none";
         });
     }
 
