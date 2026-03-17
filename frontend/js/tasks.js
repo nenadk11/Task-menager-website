@@ -129,6 +129,68 @@ function formatDueDate(dueDate) {
         });
     }
 
+    //Ai generacija subtaskova logika
+    const aiBtn = document.getElementById("aiSubtasksBtn");
+    if(aiBtn){
+        aiBtn.addEventListener("click", async () => {
+            const title = taskTitleInput.value.trim();
+
+            if(!title){
+                alert("Enter task title first");
+                return;
+            }
+
+            if(subtasksContainer.children.length > 0){
+                if(!confirm("Replace existing subtasks with AI suggestions?")){
+                    return;
+                }
+
+                subtasksContainer.innerHTML = "";
+            }
+
+            aiBtn.disabled = true;
+            aiBtn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> Generating...`;
+
+            try{
+
+                const res = await fetch("/backend/api/ai/subtasks.php", {
+                    method:"POST",
+                    headers:{
+                        "Content-Type":"application/json"
+                    },
+                    body: JSON.stringify({
+                        task: title
+                    })
+                });
+
+                const data = await res.json();
+                subtasksContainer.innerHTML = "";
+
+                data.slice(0,5).forEach(text => {
+
+                    const wrapper = document.createElement("div");
+                    wrapper.classList.add("subtask-row");
+
+                    wrapper.innerHTML = `
+                        <input type="text" class="subtask-input" value="${text}">
+                        <button type="button" class="remove-subtask">✕</button>
+                    `;
+
+                    wrapper.querySelector(".remove-subtask").onclick = () => wrapper.remove();
+
+                    subtasksContainer.appendChild(wrapper);
+                });
+
+            }catch(err){
+                console.error("AI error:", err);
+            }
+
+            aiBtn.disabled = false;
+            aiBtn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> Generate subtasks`;
+
+        });
+    }
+
     //Pamti sort koji je bio
     sortBtn.addEventListener("click", () => {
         const currentIndex = sortModes.indexOf(currentSort);
