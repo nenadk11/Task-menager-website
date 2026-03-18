@@ -186,7 +186,7 @@ function formatDueDate(dueDate) {
             }
 
             aiBtn.disabled = false;
-            aiBtn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> Generate subtasks`;
+            aiBtn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> Generate subtasks with AI`;
 
         });
     }
