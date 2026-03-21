@@ -167,8 +167,10 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
             //Update svih subtaskova
             $stmt = $pdo->prepare("
                 UPDATE subtasks
-                SET status = :status
-                WHERE task_id = :task_id
+                JOIN tasks ON subtasks.task_id = tasks.id
+                SET subtasks.status = :status
+                WHERE subtasks.task_id = :task_id
+                AND tasks.user_id = :user_id
             ");
 
             $stmt->execute([
@@ -205,6 +207,9 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
                 $stmtDel = $pdo->prepare("
                     DELETE FROM subtasks
                     WHERE task_id = :task_id
+                    AND task_id IN (
+                        SELECT id FROM tasks WHERE user_id = :user_id
+                    )
                 ");
 
                 $stmtDel->execute([
@@ -270,9 +275,10 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
 
             //Uzmi task_id tog subtaska
             $stmt = $pdo->prepare("
-                SELECT task_id 
-                FROM subtasks 
-                WHERE id = :id
+                SELECT subtasks.task_id
+                FROM subtasks
+                JOIN tasks ON subtasks.task_id = tasks.id
+                WHERE subtasks.id = :id AND tasks.user_id = :user_id
             ");
             $stmt->execute(["id" => $data["id"]]);
             $taskId = $stmt->fetchColumn();
