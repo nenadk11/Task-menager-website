@@ -31,7 +31,7 @@ $apiKey = $env['OPENROUTER_API_KEY'] ?? null;
 
 $prompt = "Break this task into 4 short actionable subtasks.
 Return only JSON array of strings.
-Answer in the language the task title is.
+Answer in the language the task title is, it will usually be either serbian or english.
 
 Task: $task";
 
