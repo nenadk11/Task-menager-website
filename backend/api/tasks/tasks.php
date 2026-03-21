@@ -175,7 +175,8 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
 
             $stmt->execute([
                 "status" => $newStatus,
-                "task_id" => $data["id"]
+                "task_id" => $data["id"],
+                "user_id" => $userId
             ]);
 
             echo json_encode(["success" => true]);
@@ -213,7 +214,8 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
                 ");
 
                 $stmtDel->execute([
-                    "task_id" => $data["id"]
+                    "task_id" => $data["id"],
+                    "user_id" => $userId
                 ]);
 
                 //Dodaj nove subtasks
@@ -280,7 +282,10 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
                 JOIN tasks ON subtasks.task_id = tasks.id
                 WHERE subtasks.id = :id AND tasks.user_id = :user_id
             ");
-            $stmt->execute(["id" => $data["id"]]);
+            $stmt->execute([
+                "id" => $data["id"],
+                "user_id" => $userId
+            ]);
             $taskId = $stmt->fetchColumn();
 
             //Koliko ima ukupno subtasks
