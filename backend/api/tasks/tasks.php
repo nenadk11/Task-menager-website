@@ -42,6 +42,75 @@ if($_SERVER["REQUEST_METHOD"] === "GET"){
         $task["subtasks"] = $subtasksByTask[$task["id"]] ?? [];
     }
 
+    unset($task);
+
+    //Generisi notifikacije
+    $today = new DateTime();
+    $today->setTime(0,0,0);
+
+    foreach($tasks as $task){
+
+        if(!empty($task["due_date"]) && $task["status"] !== "completed"){
+
+            $due = new DateTime($task["due_date"]);
+            $due->setTime(0,0,0);
+
+            $diff = (int)$today->diff($due)->format("%r%a");
+
+            if($diff === 1 && $task["due_tomorrow_notified"] == 0){
+
+                $stmt = $pdo->prepare("
+                    INSERT INTO notifications (user_id, task_id, type, message)
+                    VALUES (:user_id, :task_id, 'due_tomorrow', :message)
+                ");
+
+                $stmt->execute([
+                    "user_id" => $userId,
+                    "task_id" => $task["id"],
+                    "message" => '⏰ "' . $task["task"] . '" is due tomorrow'
+                ]);
+
+                $pdo->prepare("UPDATE tasks SET due_tomorrow_notified = 1 WHERE id = ?")
+                    ->execute([$task["id"]]);
+            }
+
+            if($diff === 0 && $task["due_today_notified"] == 0){
+
+                $stmt = $pdo->prepare("
+                    INSERT INTO notifications (user_id, task_id, type, message)
+                    VALUES (:user_id, :task_id, 'due_today', :message)
+                ");
+
+                $stmt->execute([
+                    "user_id" => $userId,
+                    "task_id" => $task["id"],
+                    "message" => '⚠️ "' . $task["task"] . '" is due today'
+                ]);
+
+                $pdo->prepare("UPDATE tasks SET due_today_notified = 1 WHERE id = ?")
+                    ->execute([$task["id"]]);
+            }
+
+            if($diff < 0 && $task["overdue_notified"] == 0){
+
+                $stmt = $pdo->prepare("
+                    INSERT INTO notifications (user_id, task_id, type, message)
+                    VALUES (:user_id, :task_id, 'overdue', :message)
+                ");
+
+                $stmt->execute([
+                    "user_id" => $userId,
+                    "task_id" => $task["id"],
+                    "message" => '❌ "' . $task["task"] . '" is overdue'
+                ]);
+
+                $pdo->prepare("UPDATE tasks SET overdue_notified = 1 WHERE id = ?")
+                    ->execute([$task["id"]]);
+            }
+        }
+        
+    }
+
     //Vrati frontendu
     echo json_encode($tasks);
     exit;
@@ -189,7 +258,12 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
 
             $stmt = $pdo->prepare("
             UPDATE tasks
-            SET task = :task, priority = :priority, due_date = :due_date
+            SET task = :task, 
+                priority = :priority, 
+                due_date = :due_date,
+                due_tomorrow_notified = 0,
+                due_today_notified = 0,
+                overdue_notified = 0
             WHERE id = :id AND user_id = :user_id
             ");
 

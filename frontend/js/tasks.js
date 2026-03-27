@@ -8,6 +8,8 @@ const taskPriorityInput = document.getElementById("taskPriority");
 const taskDueDateInput = document.getElementById("taskDueDate");
 const subtasksContainer = document.getElementById("subtasksContainer");
 const addSubtaskBtn = document.getElementById("addSubtaskBtn");
+const bellBtn = document.querySelector(".notification-btn");
+const dropdown = document.getElementById("notificationDropdown");
 
 let expandedTasks = new Set();
 
@@ -88,12 +90,12 @@ function formatDueDate(dueDate) {
 
     const sortModes = ["default", "due", "priority-high", "priority-low"];
 
-    const savedSort = localStorage.getItem("taskSortMode");
+    const savedSort = localStorage.getItem(`taskSortMode_${user.id}`);
     if (savedSort && sortModes.includes(savedSort)) {
         currentSort = savedSort;
     }
 
-    const savedFilter = localStorage.getItem("taskFilter");
+    const savedFilter = localStorage.getItem(`taskFilter_${user.id}`);
     if (savedFilter) {
         filterSelect.value = savedFilter;
     }
@@ -198,7 +200,7 @@ function formatDueDate(dueDate) {
 
         currentSort = sortModes[nextIndex];
 
-        localStorage.setItem("taskSortMode", currentSort);
+        localStorage.setItem(`taskSortMode_${user.id}`, currentSort);
 
         updateSortButtonText();
         loadTasks();
@@ -215,8 +217,119 @@ function formatDueDate(dueDate) {
         sortBtn.innerHTML = `<i class="fa-solid fa-sort"></i> Sort: ${text}`;
     }
 
+    //Funkcija za skrol i fokus na task iz notifikacija
+    function scrollToTask(taskId){
+        const el = document.querySelector(`.task-item[data-id="${taskId}"]`);
+
+        if(!el) return;
+
+        el.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
+
+        //highlight efekat
+        el.classList.add("highlight-task");
+
+        setTimeout(() => {
+            el.classList.remove("highlight-task");
+        }, 1500);
+    }
+    
+    async function loadNotifications(){
+        try{
+            const res = await fetch("/backend/api/notifications/notifications.php");
+            const notifications = await res.json();
+
+            renderNotificationsFromDB(notifications);
+
+        }catch(err){
+            console.error("Error loading notifications:", err);
+        }
+    }
+
+    function renderNotificationsFromDB(notifications){
+        const badge = document.querySelector(".notification-badge");
+        const dropdown = document.getElementById("notificationDropdown");
+
+        if(!badge || !dropdown) return;
+
+        dropdown.innerHTML = "";
+
+        const unread = notifications;
+
+        if(unread.length > 0){
+            badge.textContent = unread.length;
+            badge.classList.add("show");
+
+            unread.forEach(n => {
+                const div = document.createElement("div");
+                div.className = "notification-item";
+
+                div.innerHTML = `
+                    <span>${n.message}</span>
+                    <a href="#" class="notif-link">Show</a>
+                `;
+
+                div.querySelector(".notif-link").addEventListener("click", async (e) => {
+                    e.preventDefault();
+
+                    scrollToTask(n.task_id);
+                    dropdown.classList.remove("show");
+
+                    //Obrisi notifikaciju
+                    await fetch("/backend/api/notifications/notifications.php", {
+                        method:"POST",
+                        headers:{ "Content-Type":"application/json" },
+                        body: JSON.stringify({
+                            action: "delete",
+                            id: n.id
+                        })
+                    });
+
+                    await loadNotifications();
+                });
+
+                dropdown.appendChild(div);
+
+            });
+
+            //Dodaj clear all dugme ako ima 2 ili vise notifikacije
+            if(unread.length >= 2){
+                const clearBtn = document.createElement("div");
+                clearBtn.className = "notification-clear-all";
+                clearBtn.textContent = "Clear all notifications";
+
+                clearBtn.addEventListener("click", async () => {
+
+                    await fetch("/backend/api/notifications/notifications.php", {
+                        method:"POST",
+                        headers:{ "Content-Type":"application/json" },
+                        body: JSON.stringify({
+                            action: "delete_all"
+                        })
+                    });
+
+                    await loadNotifications();
+                });
+
+                dropdown.appendChild(clearBtn);
+            }
+
+        }else{
+            badge.classList.remove("show");
+
+            const empty = document.createElement("div");
+            empty.className = "notification-empty";
+            empty.textContent = "You have no notifications";
+
+            dropdown.appendChild(empty);
+        }
+    }
+
     //GET - za ucitavanje taskova iz backenda
     async function loadTasks() {
+
         try {
             const res = await fetch("/backend/api/tasks/tasks.php");
             const tasks = await res.json();
@@ -224,6 +337,7 @@ function formatDueDate(dueDate) {
             onHoldContainer.innerHTML = "";
             completedContainer.innerHTML = "";
 
+            console.log("loadTasks called");
             let completed = 0;
             let pending = 0;
 
@@ -387,13 +501,31 @@ function formatDueDate(dueDate) {
             updateStats(tasks.length, completed, pending);
 
             applyFilter();
+
+            loadNotifications();
         } catch (err) {
             console.error("Error loading tasks:", err);
-        }
+        }       
     }
 
     //Event delegation za toggle/delete/edit
     document.addEventListener("click", async (e) => {
+
+        //Notifikacije ugasi ako klikne napolje
+        if (dropdown && bellBtn) {
+            const isClickInsideDropdown = dropdown.contains(e.target);
+            const isClickOnBell = bellBtn.contains(e.target);
+
+            if (!isClickInsideDropdown && !isClickOnBell) {
+                dropdown.classList.remove("show");
+            }
+        }
+
+        //Prikazi notifikacije ako klikne na dugme
+        if (e.target.closest(".notification-btn")) {
+            dropdown.classList.toggle("show");
+            return;
+        }
 
         //Toggle subtask
         const subCheckbox = e.target.closest(".subtask-card")?.querySelector(".subtask-checkbox");
@@ -633,7 +765,7 @@ function formatDueDate(dueDate) {
     //Pamti selectovani value na filteru
     filterSelect.addEventListener("change", () => {
         const value = filterSelect.value;
-        localStorage.setItem("taskFilter", value);
+        localStorage.setItem(`taskFilter_${user.id}`, value);
         applyFilter();
     });
 

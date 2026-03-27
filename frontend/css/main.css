@@ -580,6 +580,101 @@ body {
     cursor:pointer;
 }
 
+.notification-wrapper{
+    position: relative;
+}
+
+.notification-btn{
+    position: relative;
+}
+
+.notification-badge{
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #dc2626;
+    color: white;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 50%;
+    display: none;
+}
+
+.notification-badge.show{
+    display: inline-block;
+}
+
+.notification-dropdown{
+    position: absolute;
+    top: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 280px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    padding: 10px;
+    display: none;
+    z-index: 1000;
+}
+
+.notification-dropdown.show{
+    display: block;
+}
+
+.notification-item{
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.highlight-task{
+    outline: 2px solid var(--button-color);
+    box-shadow: 0 0 10px rgba(59,130,246,0.6);
+    transition: all 0.3s ease;
+}
+
+.notif-text{
+    flex: 1;
+    font-size: 13px;
+}
+
+.notif-link{
+    font-size: 12px;
+    color: var(--button-color);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.notif-link:hover{
+    text-decoration: underline;
+}
+
+.notification-clear-all {
+    padding: 10px;
+    text-align: center;
+    font-size: 13px;
+    cursor: pointer;
+    border-top: 1px solid #eee;
+    color: #ff4d4f;
+    font-weight: 500;
+}
+
+.notification-clear-all:hover {
+    background: #f5f5f5;
+}
+
+.notification-empty {
+    padding: 10px;
+    text-align: center;
+    font-size: 13px;
+    color: #888;
+}
+
 @media (max-width: 1024px) {
     .container {
         grid-template-columns: 1fr;
