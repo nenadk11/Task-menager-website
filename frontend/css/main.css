@@ -49,10 +49,48 @@ body {
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
+    position: relative;
 }
 
 .icon-btn:hover {
     background-color: #e5e7eb;
+}
+
+.icon-btn::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: 120%;
+    left: 50%;
+    transform: translateX(-50%) scale(0.9);
+    background-color: var(--button-color);
+    padding: 6px 10px;
+    border-radius: 6px;
+    color: white;
+    font-weight: 500;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.2s ease;
+}
+
+.icon-btn::before {
+    content: "";
+    position: absolute;
+    top: 90%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent transparent var(--button-color) transparent;
+    opacity: 0;
+    transition: 0.2s;
+}
+
+.icon-btn:hover::after,
+.icon-btn:hover::before {
+    opacity: 0.8;
+    transform: translateX(-50%) scale(1);
 }
 
 .main-content {

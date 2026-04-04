@@ -17,7 +17,7 @@
 
             <div class="header-icons">
                 <div class="notification-wrapper">
-                    <button class="icon-btn notification-btn">
+                    <button class="icon-btn notification-btn" data-tooltip="Notifications">
                         <i class="fas fa-bell"></i>
                         <span class="notification-badge"></span>
                     </button>
@@ -25,7 +25,11 @@
                     <div id="notificationDropdown" class="notification-dropdown"></div>
                 </div>
                 
-                <button class="icon-btn"><i class="fas fa-user"></i></button>
+                <button class="icon-btn" onclick="window.location.href='profile.html'" data-tooltip="Profile"><i class="fas fa-user"></i></button>
+
+                <button class="icon-btn" id="logoutBtn" data-tooltip="Log out">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                </button>
             </div> 
         </div>
 

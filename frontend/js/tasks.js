@@ -508,7 +508,7 @@ function formatDueDate(dueDate) {
         }       
     }
 
-    //Event delegation za toggle/delete/edit
+    //Event delegation
     document.addEventListener("click", async (e) => {
 
         //Notifikacije ugasi ako klikne napolje
@@ -551,6 +551,26 @@ function formatDueDate(dueDate) {
                 await loadTasks();   
             }
             
+            return;
+        }
+
+        //Log out dugme
+        if (e.target.closest("#logoutBtn")) {
+
+            if (!confirm("Are you sure you want to sign out?")) return;
+
+            const res = await fetch("/backend/api/auth/logout.php", {
+                method: "POST"
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                window.location.href = "login.html";
+            } else {
+                alert("Logout failed");
+            }
+
             return;
         }
 

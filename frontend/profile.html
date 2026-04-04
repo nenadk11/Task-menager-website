@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo-list</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/profile.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <button class="icon-btn" onclick="window.location.href='index.html'" data-tooltip="Back">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <h1>Profile</h1>
+            </div>
+
+            <button class="icon-btn" id="logoutBtn" data-tooltip="Log out">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            </button>
+        </div>
+
+        <div class="main-content">
+            <div class="section">
+                <div class="section-header">
+                    <h2>Account Settings</h2>
+                </div>
+
+                <div class="form-group">
+                    <div id="profile-info">
+                        <p><i class="fa-solid fa-user"></i></p>
+                        <p><i class="fa-solid fa-envelope"></i></p>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Change username</label>
+                    <input type="text" id="usernameInput" placeholder="Enter new username">
+                    <div id="usernameError" class="error-text"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Change email</label>
+                    <input type="email" id="emailInput" placeholder="Enter new email">
+                    <div id="emailError" class="error-text"></div>
+                </div>
+
+                <button class="add-btn" id="saveProfileBtn">
+                    Save changes
+                </button>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <h2>Change Password</h2>
+                </div>
+
+                <div class="form-group">
+                    <label>Current password</label>
+                    <input type="password" id="currentPassword">
+                    <div id="currentPasswordError" class="error-text"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>New password</label>
+                    <input type="password" id="newPassword">
+                    <div id="newPasswordError" class="error-text"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Confirm password</label>
+                    <input type="password" id="confirmPassword">
+                    <div id="confirmPasswordError" class="error-text"></div>
+                </div>
+
+                <button class="add-btn" id="changePasswordBtn">
+                    Change password
+                </button>
+            </div>
+        </div>
+    </div>
+
+<script type="module" src="js/profile.js"></script>
+</body>
+</html>
