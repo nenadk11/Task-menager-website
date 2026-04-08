@@ -8,6 +8,12 @@
     <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <script>
+        const savedTheme = localStorage.getItem("theme");
+        if (savedTheme === "dark") {
+            document.documentElement.classList.add("dark-mode");
+        }
+    </script>
 </head>
 <body>
     <div class="container">
@@ -16,6 +22,10 @@
             </div>
 
             <div class="header-icons">
+                <button class="icon-btn" id="themeToggleBtn" data-tooltip="Switch to dark mode">
+                    <i class="fa-regular fa-moon"></i>
+                </button>
+
                 <div class="notification-wrapper">
                     <button class="icon-btn notification-btn" data-tooltip="Notifications">
                         <i class="fas fa-bell"></i>

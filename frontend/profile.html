@@ -8,6 +8,12 @@
     <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/profile.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <script>
+        const savedTheme = localStorage.getItem("theme");
+        if (savedTheme === "dark") {
+            document.documentElement.classList.add("dark-mode");
+        }
+    </script>
 </head>
 <body>
     <div class="container">
@@ -19,9 +25,15 @@
                 <h1>Profile</h1>
             </div>
 
-            <button class="icon-btn" id="logoutBtn" data-tooltip="Log out">
-                <i class="fa-solid fa-arrow-right-from-bracket"></i>
-            </button>
+            <div class="header-right">
+                <button class="icon-btn" id="themeToggleBtn" data-tooltip="Switch to dark mode">
+                        <i class="fa-regular fa-moon"></i>
+                </button>
+
+                <button class="icon-btn" id="logoutBtn" data-tooltip="Log out">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                </button>
+            </div>
         </div>
 
         <div class="main-content">

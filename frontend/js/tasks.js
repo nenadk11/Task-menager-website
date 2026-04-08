@@ -41,6 +41,21 @@ modal.addEventListener("click", (e) => {
     if (e.target === modal) closeModal();
 });
 
+//Zapamti temu sajta
+const savedTheme = localStorage.getItem("theme");
+const themeBtn = document.getElementById("themeToggleBtn");
+
+if (themeBtn && savedTheme === "dark") {
+    const icon = themeBtn.querySelector("i");
+
+    icon.classList.remove("fa-moon");
+    icon.classList.add("fa-sun");
+
+    themeBtn.setAttribute("data-tooltip", "Switch to light mode");
+}
+
+
+
 //Funkcija za formatiranje datuma
 function formatDueDate(dueDate) {
     if (!dueDate) return "";
@@ -439,11 +454,11 @@ function formatDueDate(dueDate) {
                         <span class="priority-text">${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}</span>
                     </div>
 
-                    <button class="icon-btn edit-btn" style="width:35px;height:35px;">
+                    <button class="icon-btn2 edit-btn" style="width:35px;height:35px;">
                         <i class="fas fa-pen"></i>
                     </button>
 
-                    <button class="icon-btn delete-btn" style="width:35px;height:35px;">
+                    <button class="icon-btn2 delete-btn" style="width:35px;height:35px;">
                         <i class="fas fa-trash"></i>
                     </button>
                 `;
@@ -510,6 +525,26 @@ function formatDueDate(dueDate) {
 
     //Event delegation
     document.addEventListener("click", async (e) => {
+
+        //Dugme za promenu teme sajta
+        if (e.target.closest("#themeToggleBtn")) {
+            const btn = e.target.closest("#themeToggleBtn");
+            const icon = btn.querySelector("i");
+
+            document.documentElement.classList.toggle("dark-mode");
+
+            const isDark = document.documentElement.classList.contains("dark-mode");
+
+            icon.classList.toggle("fa-moon", !isDark);
+            icon.classList.toggle("fa-sun", isDark);
+
+            btn.setAttribute(
+                "data-tooltip",
+                isDark ? "Switch to light mode" : "Switch to dark mode"
+            );
+
+            localStorage.setItem("theme", isDark ? "dark" : "light");
+        }
 
         //Notifikacije ugasi ako klikne napolje
         if (dropdown && bellBtn) {

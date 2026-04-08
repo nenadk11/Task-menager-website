@@ -1,5 +1,18 @@
 import { checkAuth } from "./auth.js";
 
+//Zapamti temu sajta
+const savedTheme = localStorage.getItem("theme");
+const themeBtn = document.getElementById("themeToggleBtn");
+
+if (themeBtn && savedTheme === "dark") {
+    const icon = themeBtn.querySelector("i");
+
+    icon.classList.remove("fa-moon");
+    icon.classList.add("fa-sun");
+
+    themeBtn.setAttribute("data-tooltip", "Switch to light mode");
+}
+
 function setError(id, message) {
     const el = document.getElementById(id);
     if (!el) return;
@@ -11,7 +24,7 @@ async function initProfile() {
     const user = await checkAuth();
 
     if (!user) {
-        window.location.href = "/login.html";
+        window.location.href = "login.html";
         return;
     }
 
@@ -193,6 +206,27 @@ async function changePassword() {
 
 //Event delegation za buttone
 document.addEventListener("click", async (e) => {
+
+    //Dugme za promenu teme sajta
+    if (e.target.closest("#themeToggleBtn")) {
+        const btn = e.target.closest("#themeToggleBtn");
+        const icon = btn.querySelector("i");
+
+        document.documentElement.classList.toggle("dark-mode");
+
+        const isDark = document.documentElement.classList.contains("dark-mode");
+
+        icon.classList.toggle("fa-moon", !isDark);
+        icon.classList.toggle("fa-sun", isDark);
+
+        btn.setAttribute(
+            "data-tooltip",
+            isDark ? "Switch to light mode" : "Switch to dark mode"
+        );
+
+        localStorage.setItem("theme", isDark ? "dark" : "light");
+    }
+
     if (e.target.closest("#saveProfileBtn")) {
         updateProfile();
     }

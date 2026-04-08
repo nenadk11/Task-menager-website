@@ -56,6 +56,25 @@ body {
     background-color: #e5e7eb;
 }
 
+.icon-btn2 {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background-color: var(--primary-bg-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.icon-btn2:hover {
+    background-color: #e5e7eb;
+}
+
+
 .icon-btn::after {
     content: attr(data-tooltip);
     position: absolute;
@@ -89,7 +108,7 @@ body {
 
 .icon-btn:hover::after,
 .icon-btn:hover::before {
-    opacity: 0.8;
+    opacity: 1;
     transform: translateX(-50%) scale(1);
 }
 
@@ -717,4 +736,95 @@ body {
     .container {
         grid-template-columns: 1fr;
     }
+}
+
+/*DARK MODE*/
+
+.dark-mode {
+    --primary-bg-color: #03071d;
+    --primary-font-color: #F1F5F9;
+    --primary-container-color: #10192e;
+    --button-color: #38BDF8;
+    --button-hover-color: #0ea5e9;
+}
+
+.dark-mode .container {
+    background-color: #10192e;
+    color: #F1F5F9;
+}
+
+.dark-mode .task-item {
+    background-color: #1e293b;
+    color: #F1F5F9;
+}
+
+.dark-mode .sidebar {
+    background-color: #0f172a;
+    color: #F1F5F9;
+}
+
+.dark-mode .stat-card {
+    background-color: #1e293b;
+    color: #F1F5F9;
+}
+
+.dark-mode .notification-dropdown {
+    background-color: #1e293b;
+    color: #F1F5F9;
+}
+
+.dark-mode .modal-content {
+    background-color: #1e293b;
+    color: #F1F5F9;
+}
+
+.dark-mode .filter-container select {
+    background-color: #1e293b;
+    color: #F1F5F9;
+    border-color: #334155;
+}
+
+.dark-mode .form-group input,
+.dark-mode .form-group select {
+    background-color: #0f172a;
+    color: #F1F5F9;
+    border-color: #334155;
+}
+
+.dark-mode input:focus,
+.dark-mode select:focus {
+    border-color: var(--button-color);
+}
+
+.dark-mode .icon-btn,
+.dark-mode .icon-btn2,
+.dark-mode .clear-completed-btn,
+.dark-mode .sort-btn,
+.dark-mode .expand-btn {
+    color: #F1F5F9;
+}
+
+.dark-mode .icon-btn:hover,
+.dark-mode .icon-btn2:hover,
+.dark-mode .clear-completed-btn:hover,
+.dark-mode .sort-btn:hover{
+    background-color: #06080e;
+}
+
+.dark-mode .btn-secondary {
+    background-color: #03071d;
+    color: #F1F5F9;
+}
+
+.dark-mode .btn-secondary:hover {
+    background-color: #06080e;
+}
+
+.dark-mode .sidebar-title,
+.dark-mode .stat-value {
+    color: #F1F5F9;
+}
+
+.dark-mode .sidebar {
+    background-color: #03071d;
 }

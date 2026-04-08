@@ -37,6 +37,12 @@ body {
     gap: 15px;
 }
 
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
 .icon-btn {
     width: 40px;
     height: 40px;
@@ -88,7 +94,7 @@ body {
 
 .icon-btn:hover::after,
 .icon-btn:hover::before {
-    opacity: 0.8;
+    opacity: 1;
     transform: translateX(-50%) scale(1);
 }
 
@@ -161,7 +167,7 @@ body {
 }
 
 #profile-info {
-    margin-bottom: 14px;
+    margin-bottom: 17px;
 }
 
 #profile-info i {
@@ -178,4 +184,41 @@ body {
     .container {
         grid-template-columns: 1fr;
     }
+}
+
+/*DARK MODE*/
+
+.dark-mode {
+    --primary-bg-color: #03071d;
+    --primary-font-color: #F1F5F9;
+    --primary-container-color: #10192e;
+    --button-color: #38BDF8;
+    --button-hover-color: #0ea5e9;
+}
+
+.dark-mode .container {
+    background-color: #10192e;
+    color: #F1F5F9;
+}
+
+.dark-mode .section {
+    background-color: #03071d;
+}
+
+.dark-mode .form-group input {
+    background-color: #0f172a;
+    color: #F1F5F9;
+    border-color: #334155;
+}
+
+.dark-mode .icon-btn {
+    color: #F1F5F9;
+}
+
+.dark-mode .icon-btn:hover {
+    background-color: #06080e;
+}
+
+.dark-mode input:focus {
+    border-color: var(--button-color);
 }
