@@ -1,9 +1,14 @@
 import { checkAuth } from "./auth.js";
 
-//Zapamti temu sajta
 const savedTheme = localStorage.getItem("theme");
 const themeBtn = document.getElementById("themeToggleBtn");
 
+const aiBtn = document.getElementById("aiInsightsBtn");
+const aiBox = document.getElementById("aiInsightsBox");
+
+let aiCooldownInterval = null;
+
+//Zapamti temu sajta
 if (themeBtn && savedTheme === "dark") {
     const icon = themeBtn.querySelector("i");
 
@@ -29,6 +34,10 @@ async function initProfile() {
     }
 
     loadProfile();
+
+    if (aiBtn && aiBox) {
+        loadAIInsights();
+    }
 }
 
 initProfile();
@@ -204,6 +213,126 @@ async function changePassword() {
     }
 }
 
+//Funkcija za zastitu od html injectiona
+function escapeHTML(str) {
+    return str.replace(/[&<>"']/g, function (m) {
+        return ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        })[m];
+    });
+}
+
+//Funkcija za dobijanje dana do kraja coldown za ai analysis btn
+function getDaysLeft(dateStr) {
+    const now = new Date();
+    const future = new Date(dateStr);
+
+    const diff = future - now;
+    return Math.ceil(diff / (1000 * 60 * 60 * 24));
+}
+
+//Funkcija za formatiranje samo dana do isteka coldowna
+function formatDaysLeft(ms) {
+    const totalDays = Math.ceil(ms / (1000 * 60 * 60 * 24));
+
+    if (totalDays <= 1) return "1 day";
+    return `${totalDays} days`;
+}
+
+//Funkcija za formatiranje ostatka vremena do kraja coldowna
+function formatTimeLeft(ms) {
+    const totalSeconds = Math.floor(ms / 1000);
+
+    const days = Math.floor(totalSeconds / (3600 * 24));
+    const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    let parts = [];
+
+    if (days > 0) parts.push(`${days}d`);
+    if (hours > 0 || days > 0) parts.push(`${hours}h`);
+    if (minutes > 0 || hours > 0 || days > 0) parts.push(`${minutes}m`);
+    parts.push(`${seconds}s`);
+
+    return parts.join(" ");
+}
+
+//Funkcija za promenu buttona u zavisnosti od coldowna
+function startCooldownTimer(dateStr) {
+    const update = () => {
+        const now = new Date();
+        const target = new Date(dateStr);
+        const diff = target - now;
+
+        if (diff <= 0) {
+            aiBtn.disabled = false;
+            aiBtn.textContent = "Analyze productivity with AI";
+            aiBtn.removeAttribute("title");
+            aiBtn.removeAttribute("data-tooltip");
+            clearInterval(window.aiCooldownInterval);
+            return;
+        }
+
+        const text = `You can analyze productivity again in ${formatTimeLeft(diff)}`;
+
+        aiBtn.setAttribute("data-tooltip", text);
+
+        aiBtn.textContent = `Available in ${formatDaysLeft(diff)}`;
+    };
+
+    update();
+    aiCooldownInterval = setInterval(update, 1000);
+}
+
+//Funkcija za loadovanje ai analize
+async function loadAIInsights() {
+    try {
+        const res = await fetch("/backend/api/ai/productivity.php");
+        const data = await res.json();
+
+        if (data.error) {
+            aiBox.innerHTML = `<p>${data.error}</p>`;
+            return;
+        }
+
+        if (!data.analysis) {
+            aiBox.innerHTML = `<p>Click the button to analyze your productivity.</p>`;
+            aiBtn.disabled = false;
+            aiBtn.textContent = "Analyze productivity with AI";
+            return;
+        }
+
+        //Prikaz analize
+        aiBox.innerHTML = formatAnalysis(escapeHTML(data.analysis));
+
+        if (!data.canUpdate) {
+            aiBtn.disabled = true;
+            startCooldownTimer(data.nextUpdateAt);
+        } else {
+            aiBtn.disabled = false;
+            aiBtn.textContent = "Update analysis";
+        }
+
+    } catch (err) {
+        console.error(err);
+        aiBox.innerHTML = `<p>Error loading analysis</p>`;
+    }
+}
+
+function formatAnalysis(text) {
+    return text
+        .replace(/\n/g, "<br>")
+        .replace(/Productivity:/g, "<h3>📈 Productivity</h3>")
+        .replace(/Problems:/g, "<h3>⚠️ Problems</h3>")
+        .replace(/Habits:/g, "<h3>🔁 Habits</h3>")
+        .replace(/Suggestions:/g, "<h3>💡 Suggestions</h3>");
+}
+
 //Event delegation za buttone
 document.addEventListener("click", async (e) => {
 
@@ -253,6 +382,47 @@ document.addEventListener("click", async (e) => {
         }
 
         return;
+    }
+
+    //Dugme za Ai analizu
+    if (e.target.closest("#aiInsightsBtn")) {
+
+        if (!aiBtn || !aiBox) return;
+
+        if (aiBtn.disabled) return;
+
+        aiBtn.disabled = true;
+        aiBtn.textContent = "Analyzing...";
+        aiBox.innerHTML = `
+            <p>Analyzing your productivity...</p>
+            <small>This may take a few seconds</small>
+        `;
+
+        try {
+            const res = await fetch("/backend/api/ai/productivity.php", {
+                method: "POST"
+            });
+
+            const data = await res.json();
+
+            if (data.error) {
+                aiBox.innerHTML = `<p>${data.error}</p>`;
+                aiBtn.disabled = false;
+                aiBtn.textContent = "Try again";
+                return;
+            }
+
+            aiBox.innerHTML = formatAnalysis(escapeHTML(data.analysis));
+
+            aiBtn.disabled = true;
+            startCooldownTimer(data.nextUpdateAt);
+
+        } catch (err) {
+            console.error(err);
+            aiBox.innerHTML = "<p>Error generating analysis</p>";
+            aiBtn.disabled = false;
+            aiBtn.textContent = "Try again";
+        }
     }
 });
 

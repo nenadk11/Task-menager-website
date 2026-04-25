@@ -83,3 +83,4 @@ $subtasks = array_slice($subtasks, 0, 5);
 $subtasks = array_map('trim', $subtasks);
 
 echo json_encode($subtasks);
+?>

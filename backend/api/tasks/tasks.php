@@ -17,7 +17,13 @@ $userId = $_SESSION["user"]["id"];
 if($_SERVER["REQUEST_METHOD"] === "GET"){
 
     //Uzme taskove iz baze
-    $stmt = $pdo->prepare("SELECT * FROM tasks WHERE user_id = :user_id ORDER BY id DESC");
+    $stmt = $pdo->prepare("
+        SELECT * FROM tasks 
+        WHERE user_id = :user_id 
+        AND deleted_at IS NULL
+        ORDER BY id DESC
+    ");
+
     $stmt->execute(["user_id" => $userId]);
     $tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -27,7 +33,9 @@ if($_SERVER["REQUEST_METHOD"] === "GET"){
         FROM subtasks
         JOIN tasks ON subtasks.task_id = tasks.id
         WHERE tasks.user_id = :user_id
+        AND tasks.deleted_at IS NULL
     ");
+    
     $stmtSub->execute(["user_id" => $userId]);
     $subtasks = $stmtSub->fetchAll(PDO::FETCH_ASSOC);
 
@@ -187,8 +195,13 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
         //Ako je poslat id
         if(!empty($data["id"])){
 
-            //Brisanje taska iz baze
-            $stmt = $pdo->prepare("DELETE FROM tasks WHERE id = :id AND user_id = :user_id");
+            //Soft brisanje taska iz baze
+            $stmt = $pdo->prepare("
+                UPDATE tasks 
+                SET deleted_at = NOW()
+                WHERE id = :id AND user_id = :user_id
+            ");
+
             $stmt->execute([
                 "id" => $data["id"],
                 "user_id" => $userId
@@ -220,15 +233,19 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
             //Odredi novi status
             $newStatus = ($currentStatus === "completed") ? "pending" : "completed";
 
+            $completedAt = ($newStatus === "completed") ? date("Y-m-d H:i:s") : null;
+
             //Update task
             $stmt = $pdo->prepare("
                 UPDATE tasks
-                SET status = :status
+                SET status = :status,
+                    completed_at = :completed_at
                 WHERE id = :id AND user_id = :user_id
             ");
 
             $stmt->execute([
                 "status" => $newStatus,
+                "completed_at" => $completedAt,
                 "id" => $data["id"],
                 "user_id" => $userId
             ]);
@@ -319,9 +336,9 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
     if($data["action"] == "clear_completed"){
         
         $stmt = $pdo->prepare("
-            DELETE FROM tasks
-            WHERE user_id = :user_id
-            AND status = 'completed'
+            UPDATE tasks 
+            SET deleted_at = NOW()
+            WHERE user_id = :user_id AND status = 'completed'
             ");
         $stmt->execute(["user_id" => $userId]);
 
@@ -385,7 +402,8 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
 
                 $stmt = $pdo->prepare("
                     UPDATE tasks
-                    SET status = 'completed'
+                    SET status = 'completed',
+                        completed_at = NOW()
                     WHERE id = :task_id AND user_id = :user_id
                 ");
 
@@ -399,7 +417,8 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
                 //Ako nije sve completed - task vrati na pending
                 $stmt = $pdo->prepare("
                     UPDATE tasks
-                    SET status = 'pending'
+                    SET status = 'pending',
+                        completed_at = NULL
                     WHERE id = :task_id AND user_id = :user_id
                 ");
 
