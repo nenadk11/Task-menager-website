@@ -272,3 +272,21 @@ body {
 #aiInsightsBox h3 {
     margin-top: 15px;
 }
+
+.footer {
+    margin-top: 40px;
+    padding: 15px;
+    text-align: center;
+    font-size: 13px;
+    color: #888;
+}
+
+.footer a {
+    color: inherit;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.footer a:hover {
+    text-decoration: underline;
+}

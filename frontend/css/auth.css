@@ -12,6 +12,7 @@ body {
     min-height: 100vh;
     background-color: var(--primary-bg-color);
     color: var(--primary-font-color);
+    flex-direction: column;
 }
 
 .container {
@@ -25,6 +26,7 @@ body {
     border-radius: 10px;
     background-color: white;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-top: auto;
 }
 
 h2 {
@@ -92,5 +94,24 @@ a {
 }
 
 a:hover {
+    text-decoration: underline;
+}
+
+.footer {
+    margin-top: 40px;
+    padding: 15px;
+    text-align: center;
+    font-size: 13px;
+    color: #888;
+    margin-top: auto;
+}
+
+.footer a {
+    color: inherit;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.footer a:hover {
     text-decoration: underline;
 }
