@@ -1,4 +1,15 @@
 const form = document.getElementById("registerForm");
+const currentTheme = localStorage.getItem("theme");
+const themeBtn = document.getElementById("themeToggleBtn");
+
+if (themeBtn && currentTheme === "dark") {
+    const icon = themeBtn.querySelector("i");
+
+    icon.classList.remove("fa-moon");
+    icon.classList.add("fa-sun");
+
+    themeBtn.setAttribute("data-tooltip", "Switch to light mode");
+}
 
 function setError(id, message) {
     const el = document.getElementById(id);
@@ -90,4 +101,22 @@ form.addEventListener("submit", async (e) => {
         console.error(err);
         alert("Something went wrong. Please try again.");
     }
+});
+
+themeBtn?.addEventListener("click", () => {
+    const icon = themeBtn.querySelector("i");
+
+    document.documentElement.classList.toggle("dark-mode");
+
+    const isDark = document.documentElement.classList.contains("dark-mode");
+
+    icon.classList.toggle("fa-moon", !isDark);
+    icon.classList.toggle("fa-sun", isDark);
+
+    themeBtn.setAttribute(
+        "data-tooltip",
+        isDark ? "Switch to light mode" : "Switch to dark mode"
+    );
+
+    localStorage.setItem("theme", isDark ? "dark" : "light");
 });

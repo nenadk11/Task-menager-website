@@ -8,11 +8,22 @@
     <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/auth.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <script>
+        const savedTheme = localStorage.getItem("theme");
+        if (savedTheme === "dark") {
+            document.documentElement.classList.add("dark-mode");
+        }
+    </script>
 </head>
 <body>
     <div class="form-box">
-        <form id="loginForm" novalidate>
+        <div class="header">
             <h2>Login</h2>
+            <button class="icon-btn" id="themeToggleBtn" data-tooltip="Switch to dark mode">
+                    <i class="fa-regular fa-moon"></i>
+            </button>
+        </div>
+        <form id="loginForm" novalidate>
             <div class="form-group">
                 <input type="email" name="email" placeholder="Email" required>
                 <small class="error-msg" id="emailError"></small>

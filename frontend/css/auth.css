@@ -19,6 +19,19 @@ body {
     margin: 0 15px;
 }
 
+.header {
+    position: relative;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.header .icon-btn {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
 .form-box {
     width: 100%;
     max-width: 450px;
@@ -62,6 +75,62 @@ input {
     color: #ef4444;
     min-height: 15px;
     margin-top: 3px;
+}
+
+.icon-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background-color: var(--primary-bg-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    position: relative;
+    color: var(--primary-font-color);
+}
+
+.icon-btn:hover {
+    background-color: #e5e7eb;
+}
+
+.icon-btn::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: 120%;
+    left: 50%;
+    transform: translateX(-50%) scale(0.9);
+    background-color: var(--button-color);
+    padding: 6px 10px;
+    border-radius: 6px;
+    color: white;
+    font-weight: 500;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.2s ease;
+}
+
+.icon-btn::before {
+    content: "";
+    position: absolute;
+    top: 90%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent transparent var(--button-color) transparent;
+    opacity: 0;
+    transition: 0.2s;
+}
+
+.icon-btn:hover::after,
+.icon-btn:hover::before {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
 }
 
 button {
@@ -114,4 +183,40 @@ a:hover {
 
 .footer a:hover {
     text-decoration: underline;
+}
+
+.dark-mode {
+    --primary-bg-color: #03071d;
+    --primary-font-color: #F1F5F9;
+    --primary-container-color: #10192e;
+    --button-color: #38BDF8;
+    --button-hover-color: #0ea5e9;
+}
+
+.dark-mode .form-box {
+    background-color: #10192e;
+    color: #F1F5F9;
+}
+
+.dark-mode .form-group input {
+    background-color: #0f172a;
+    color: #F1F5F9;
+    border-color: #334155;
+}
+
+.dark-mode input:focus {
+    border-color: var(--button-color);
+}
+
+.dark-mode .icon-btn {
+    color: #F1F5F9;
+}
+
+.dark-mode .icon-btn:hover {
+    background-color: #06080e;
+}
+
+.dark-mode input:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 1000px #0f172a inset !important;
+    -webkit-text-fill-color: #F1F5F9 !important;
 }
