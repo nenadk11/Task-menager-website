@@ -205,7 +205,19 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
             $stmt->execute([
                 "id" => $data["id"],
                 "user_id" => $userId
-                ]);
+            ]);
+
+            //Brisanje notifikacije za task
+            $stmt = $pdo->prepare("
+                DELETE FROM notifications
+                WHERE task_id = :task_id
+                AND user_id = :user_id
+            ");
+
+            $stmt->execute([
+                "task_id" => $data["id"],
+                "user_id" => $userId
+            ]);
 
             echo json_encode(["success" => true]);
         }
@@ -232,6 +244,20 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
 
             //Odredi novi status
             $newStatus = ($currentStatus === "completed") ? "pending" : "completed";
+
+            if($newStatus === "completed"){
+
+                $stmt = $pdo->prepare("
+                    DELETE FROM notifications
+                    WHERE task_id = :task_id
+                    AND user_id = :user_id
+                ");
+
+                $stmt->execute([
+                    "task_id" => $data["id"],
+                    "user_id" => $userId
+                ]);
+            }
 
             $completedAt = ($newStatus === "completed") ? date("Y-m-d H:i:s") : null;
 
@@ -292,6 +318,17 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
                 "user_id" => $userId
             ]);
 
+            $stmt = $pdo->prepare("
+                DELETE FROM notifications
+                WHERE task_id = :task_id
+                AND user_id = :user_id
+            ");
+
+            $stmt->execute([
+                "task_id" => $data["id"],
+                "user_id" => $userId
+            ]);
+
             //SUBTASK UPDATE
             if(isset($data["subtasks"])){
 
@@ -341,6 +378,19 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
             WHERE user_id = :user_id AND status = 'completed'
             ");
         $stmt->execute(["user_id" => $userId]);
+
+        //Brisanje notifikacija za taskove koji se brisu ako idalje postoje
+        $stmt = $pdo->prepare("
+            DELETE n FROM notifications n
+            JOIN tasks t ON n.task_id = t.id
+            WHERE t.user_id = :user_id
+            AND t.status = 'completed'
+            AND t.deleted_at IS NOT NULL
+        ");
+
+        $stmt->execute([
+            "user_id" => $userId
+        ]);
 
         echo json_encode(["success" => true]);
     }
@@ -405,6 +455,17 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
                     SET status = 'completed',
                         completed_at = NOW()
                     WHERE id = :task_id AND user_id = :user_id
+                ");
+
+                $stmt->execute([
+                    "task_id" => $taskId,
+                    "user_id" => $userId
+                ]);
+
+                $stmt = $pdo->prepare("
+                    DELETE FROM notifications
+                    WHERE task_id = :task_id
+                    AND user_id = :user_id
                 ");
 
                 $stmt->execute([
